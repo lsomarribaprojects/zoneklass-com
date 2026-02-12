@@ -1,0 +1,145 @@
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  background-color: var(--bg-card);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Premium shadow */
+}
+
+.headerContent {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.communityImage {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.communityLogo {
+  color: white;
+  font-size: 2.5rem;
+  font-weight: 800;
+}
+
+.communityInfo h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.communityInfo p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.stats {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 2rem;
+}
+
+.feedColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sidebarColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.userAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.badge {
+  background-color: var(--primary-color);
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+  font-weight: 600;
+}
+
+.postFooter {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.postAction {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.postAction:hover {
+  color: var(--primary-color);
+}
+
+.filter {
+  background: none;
+  border: none;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  padding: 0.5rem 0.2rem;
+  cursor: pointer;
+  font-weight: 500;
+  position: relative;
+}
+
+.filterActive {
+  background: none;
+  border: none;
+  font-size: 0.95rem;
+  color: var(--primary-color);
+  padding: 0.5rem 0.2rem;
+  cursor: pointer;
+  font-weight: 600;
+  border-bottom: 2px solid var(--primary-color);
+}
+
+@media (max-width: 1024px) {
+  .gridContainer {
+    grid-template-columns: 1fr;
+  }
+  .sidebarColumn {
+    display: none; /* Hide sidebar on small screens for now, mock Skool behavior */
+  }
+}

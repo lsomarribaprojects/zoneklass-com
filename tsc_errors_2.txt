@@ -1,0 +1,6 @@
+﻿src/components/layout/dashboard-layout.tsx(1,25): error TS1149: File name 'C:/Users/Bimma/Apps/zoneklass.com/src/components/layout/sidebar.tsx' differs from already included file name 'C:/Users/Bimma/Apps/zoneklass.com/src/components/layout/Sidebar.tsx' only in casing.
+  The file is in the program because:
+    Imported via './Sidebar' from file 'C:/Users/Bimma/Apps/zoneklass.com/src/components/layout/index.ts'
+    Imported via './sidebar' from file 'C:/Users/Bimma/Apps/zoneklass.com/src/components/layout/dashboard-layout.tsx'
+    Matched by include pattern '**/*.tsx' in 'C:/Users/Bimma/Apps/zoneklass.com/tsconfig.json'
+src/lib/email/resend.ts(1,24): error TS2307: Cannot find module 'resend' or its corresponding type declarations.

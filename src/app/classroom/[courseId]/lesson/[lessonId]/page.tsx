@@ -13,6 +13,7 @@ export default function LessonDetail() {
   const course = MOCK_COURSES.find(c => c.id === courseId);
   
   // Find the lesson and its module
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let lesson: any = null;
   let moduleIndex = -1;
   let lessonIndex = -1;

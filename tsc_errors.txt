@@ -1,0 +1,72 @@
+﻿src/components/layout/index.ts(1,25): error TS1261: Already included file name 'C:/Users/Bimma/Apps/zoneklass.com/src/components/layout/sidebar.tsx' differs from file name 'C:/Users/Bimma/Apps/zoneklass.com/src/components/layout/Sidebar.tsx' only in casing.
+  The file is in the program because:
+    Imported via './sidebar' from file 'C:/Users/Bimma/Apps/zoneklass.com/src/components/layout/index.ts'
+    Imported via './sidebar' from file 'C:/Users/Bimma/Apps/zoneklass.com/src/components/layout/dashboard-layout.tsx'
+    Matched by include pattern '**/*.tsx' in 'C:/Users/Bimma/Apps/zoneklass.com/tsconfig.json'
+src/components/layout/index.ts(2,24): error TS1261: Already included file name 'C:/Users/Bimma/Apps/zoneklass.com/src/components/layout/header.tsx' differs from file name 'C:/Users/Bimma/Apps/zoneklass.com/src/components/layout/Header.tsx' only in casing.
+  The file is in the program because:
+    Imported via './header' from file 'C:/Users/Bimma/Apps/zoneklass.com/src/components/layout/index.ts'
+    Matched by include pattern '**/*.tsx' in 'C:/Users/Bimma/Apps/zoneklass.com/tsconfig.json'
+src/components/layout/sidebar.tsx(7,31): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/components/layout/sidebar.tsx(78,12): error TS7053: Element implicitly has an 'any' type because expression of type 'UserRole' can't be used to index type '{ admin: { label: string; color: string; }; lawyer: { label: string; color: string; }; client: { label: string; color: string; }; }'.
+src/components/notifications/NotificationCenter.tsx(6,53): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/components/public/AboutSection.tsx(2,28): error TS2307: Cannot find module '@/config/siteConfig' or its corresponding type declarations.
+src/components/public/AboutSection.tsx(6,47): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/components/public/ContactForm.tsx(4,28): error TS2307: Cannot find module '@/config/siteConfig' or its corresponding type declarations.
+src/components/public/ContactSection.tsx(2,28): error TS2307: Cannot find module '@/config/siteConfig' or its corresponding type declarations.
+src/components/public/CTABanner.tsx(2,28): error TS2307: Cannot find module '@/config/siteConfig' or its corresponding type declarations.
+src/components/public/Footer.tsx(2,28): error TS2307: Cannot find module '@/config/siteConfig' or its corresponding type declarations.
+src/components/public/Footer.tsx(32,49): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/public/Footer.tsx(56,30): error TS7006: Parameter 'service' implicitly has an 'any' type.
+src/components/public/HeroSection.tsx(2,28): error TS2307: Cannot find module '@/config/siteConfig' or its corresponding type declarations.
+src/components/public/MobileMenu.tsx(5,28): error TS2307: Cannot find module '@/config/siteConfig' or its corresponding type declarations.
+src/components/public/MobileMenu.tsx(38,45): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/public/MobileMenu.tsx(51,43): error TS7006: Parameter 'child' implicitly has an 'any' type.
+src/components/public/Navbar.tsx(5,28): error TS2307: Cannot find module '@/config/siteConfig' or its corresponding type declarations.
+src/components/public/Navbar.tsx(51,49): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/public/Navbar.tsx(66,47): error TS7006: Parameter 'child' implicitly has an 'any' type.
+src/components/public/ServicesGrid.tsx(2,28): error TS2307: Cannot find module '@/config/siteConfig' or its corresponding type declarations.
+src/components/public/ServicesGrid.tsx(16,37): error TS7006: Parameter 'service' implicitly has an 'any' type.
+src/components/public/TabbedContent.tsx(4,28): error TS2307: Cannot find module '@/config/siteConfig' or its corresponding type declarations.
+src/components/public/TabbedContent.tsx(22,24): error TS7006: Parameter 'tab' implicitly has an 'any' type.
+src/components/public/TabbedContent.tsx(22,29): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/public/TabbedContent.tsx(54,24): error TS7006: Parameter 'tab' implicitly has an 'any' type.
+src/components/public/TabbedContent.tsx(54,29): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/public/TestimonialsCarousel.tsx(4,28): error TS2307: Cannot find module '@/config/siteConfig' or its corresponding type declarations.
+src/components/public/TestimonialsCarousel.tsx(58,41): error TS7006: Parameter 'testimonial' implicitly has an 'any' type.
+src/components/public/TestimonialsCarousel.tsx(58,54): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/public/TestimonialsCarousel.tsx(82,54): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/components/public/TopBar.tsx(1,28): error TS2307: Cannot find module '@/config/siteConfig' or its corresponding type declarations.
+src/components/public/ValueCards.tsx(1,28): error TS2307: Cannot find module '@/config/siteConfig' or its corresponding type declarations.
+src/components/public/ValueCards.tsx(9,35): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/components/public/ValueCards.tsx(9,42): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/features/appointments/components/AppointmentDetail.tsx(8,62): error TS2307: Cannot find module '@/actions/appointments' or its corresponding type declarations.
+src/features/appointments/components/AppointmentDetail.tsx(9,47): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/appointments/components/AppointmentFilters.tsx(5,40): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/appointments/components/AppointmentList.tsx(4,47): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/appointments/components/AppointmentsCalendar.tsx(7,47): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/appointments/hooks/useAppointments.ts(5,66): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/appointments/services/appointmentService.ts(2,47): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/auth/components/ForgotPasswordForm.tsx(4,31): error TS2307: Cannot find module '@/actions/auth' or its corresponding type declarations.
+src/features/auth/components/LoginForm.tsx(5,23): error TS2307: Cannot find module '@/actions/auth' or its corresponding type declarations.
+src/features/auth/components/SignupForm.tsx(4,24): error TS2307: Cannot find module '@/actions/auth' or its corresponding type declarations.
+src/features/auth/components/UpdatePasswordForm.tsx(4,32): error TS2307: Cannot find module '@/actions/auth' or its corresponding type declarations.
+src/features/availability/hooks/useAvailability.ts(5,35): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/booking/components/AdminBookingForm.tsx(8,38): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/booking/components/StepConfirm.tsx(7,35): error TS2307: Cannot find module '@/actions/appointments' or its corresponding type declarations.
+src/features/booking/components/StepConfirm.tsx(11,57): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/booking/components/StepConfirm.tsx(87,10): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/features/booking/components/StepSelectLawyer.tsx(10,40): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/booking/components/StepSelectLawyer.tsx(128,10): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/features/calendar/components/CalendarView.tsx(6,76): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/dashboard/components/AdminDashboard.tsx(6,47): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/dashboard/components/UpcomingAppointments.tsx(7,47): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/dashboard/services/dashboardService.ts(2,47): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/lawyers/components/LawyerCard.tsx(7,40): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/lawyers/components/LawyerCard.tsx(18,10): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/features/lawyers/hooks/useLawyer.ts(5,40): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/lawyers/hooks/useLawyers.ts(5,40): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/lawyers/services/lawyerService.ts(2,40): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/payments/services/paymentService.ts(4,36): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/projects/components/ProjectsList.tsx(7,85): error TS2307: Cannot find module '@/types/database' or its corresponding type declarations.
+src/features/qr/components/LawyerQRSection.tsx(4,20): error TS2307: Cannot find module 'qrcode' or its corresponding type declarations.

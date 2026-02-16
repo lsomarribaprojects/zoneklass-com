@@ -23,7 +23,6 @@ export function useAuth() {
       setProfile(data)
     }
 
-    // Get initial user
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
       if (user) {
@@ -32,7 +31,6 @@ export function useAuth() {
       setLoading(false)
     })
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         const currentUser = session?.user ?? null

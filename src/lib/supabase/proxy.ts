@@ -33,17 +33,36 @@ export async function updateSession(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Rutas protegidas
-  const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard')
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/login') ||
-                      request.nextUrl.pathname.startsWith('/signup')
+  const pathname = request.nextUrl.pathname
 
+  // Rutas protegidas: dashboard y admin
+  const isProtectedRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/admin')
+  const isAuthRoute = pathname.startsWith('/login') ||
+                      pathname.startsWith('/signup') ||
+                      pathname.startsWith('/forgot-password')
+  const isAdminRoute = pathname.startsWith('/admin')
+
+  // Si no esta autenticado y quiere acceder a rutas protegidas -> login
   if (isProtectedRoute && !user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
+  // Si esta autenticado y quiere ir a auth routes -> dashboard
   if (isAuthRoute && user) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
+  // Si quiere acceder a /admin, verificar rol
+  if (isAdminRoute && user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || (profile.role !== 'super_admin' && profile.role !== 'admin')) {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
   }
 
   return supabaseResponse

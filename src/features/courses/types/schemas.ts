@@ -32,6 +32,11 @@ export const lessonSchema = z.object({
   module_id: z.string().uuid(),
 })
 
+export const enrollmentSchema = z.object({
+  course_id: z.string().uuid('ID de curso invalido'),
+})
+
 export type CourseFormData = z.infer<typeof courseSchema>
 export type ModuleFormData = z.infer<typeof moduleSchema>
 export type LessonFormData = z.infer<typeof lessonSchema>
+export type EnrollmentFormData = z.infer<typeof enrollmentSchema>

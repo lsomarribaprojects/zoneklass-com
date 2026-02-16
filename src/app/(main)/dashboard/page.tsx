@@ -1,10 +1,29 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useUser } from '@/hooks/useUser'
 import { BookOpen, Flame, Star, TrendingUp } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { EnrolledCoursesSection } from '@/features/courses/components/catalog'
 
 export default function DashboardPage() {
   const { profile, loading } = useUser()
+  const [enrolledCount, setEnrolledCount] = useState(0)
+
+  useEffect(() => {
+    if (!profile) return
+
+    async function fetchCount() {
+      const supabase = createClient()
+      const { count } = await supabase
+        .from('course_enrollments')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', profile!.id)
+      setEnrolledCount(count || 0)
+    }
+
+    fetchCount()
+  }, [profile])
 
   if (loading) {
     return (
@@ -71,22 +90,14 @@ export default function DashboardPage() {
             </div>
           </div>
           <p className="text-sm text-foreground-secondary dark:text-slate-400">Cursos</p>
-          <p className="text-3xl font-bold text-foreground dark:text-slate-100 mt-1">0</p>
+          <p className="text-3xl font-bold text-foreground dark:text-slate-100 mt-1">
+            {enrolledCount}
+          </p>
         </div>
       </div>
 
-      {/* Placeholder for courses */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-border-light dark:border-slate-700 text-center">
-        <div className="w-16 h-16 mx-auto rounded-2xl gradient-primary flex items-center justify-center mb-4">
-          <BookOpen className="w-8 h-8 text-white" />
-        </div>
-        <h2 className="text-xl font-heading font-semibold text-foreground dark:text-slate-100">
-          Tus cursos apareceran aqui
-        </h2>
-        <p className="text-foreground-secondary dark:text-slate-400 mt-2">
-          Pronto podras explorar y tomar cursos en ZoneKlass
-        </p>
-      </div>
+      {/* Enrolled Courses */}
+      <EnrolledCoursesSection />
     </div>
   )
 }

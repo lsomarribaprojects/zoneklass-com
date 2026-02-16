@@ -67,6 +67,30 @@ export interface ModuleWithLessons extends Module {
 }
 
 // ============================================
+// Inscripciones
+// ============================================
+
+export interface CourseEnrollment {
+  id: string
+  user_id: string
+  course_id: string
+  enrolled_at: string
+  completed_at: string | null
+}
+
+export interface CourseWithStats extends Course {
+  modules_count: number
+  lessons_count: number
+  total_duration_minutes: number
+  enrolled_count: number
+}
+
+export interface CourseDetail extends CourseWithModules {
+  enrolled_count: number
+  is_enrolled: boolean
+}
+
+// ============================================
 // Permisos por Rol
 // ============================================
 
@@ -126,6 +150,11 @@ export interface Database {
         Row: Lesson
         Insert: Omit<Lesson, 'id' | 'created_at'>
         Update: Partial<Omit<Lesson, 'id' | 'created_at' | 'module_id'>>
+      }
+      course_enrollments: {
+        Row: CourseEnrollment
+        Insert: Omit<CourseEnrollment, 'id' | 'enrolled_at' | 'completed_at'>
+        Update: Partial<Pick<CourseEnrollment, 'completed_at'>>
       }
     }
   }

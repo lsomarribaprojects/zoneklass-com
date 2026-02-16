@@ -24,7 +24,7 @@ import { signout } from '@/actions/auth'
 
 const NAV_ITEMS = [
   { label: 'Inicio', href: '/dashboard', icon: Home },
-  { label: 'Cursos', href: '/classroom', icon: BookOpen },
+  { label: 'Cursos', href: '/cursos', icon: BookOpen },
   { label: 'Comunidad', href: '/members', icon: Users },
   { label: 'Leaderboard', href: '/leaderboard', icon: Trophy },
 ]

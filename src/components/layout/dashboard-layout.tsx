@@ -1,4 +1,8 @@
+'use client'
+
+import { Header } from './Header'
 import { Sidebar } from './Sidebar'
+import { BottomNav } from './BottomNav'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -6,11 +10,13 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[var(--color-background)]">
+      <Header />
       <Sidebar />
-      <main className="ml-64">
+      <main className="pt-16 lg:ml-64 pb-20 lg:pb-0">
         {children}
       </main>
+      <BottomNav />
     </div>
   )
 }

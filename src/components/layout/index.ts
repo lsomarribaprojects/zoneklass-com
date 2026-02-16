@@ -1,3 +1,5 @@
 export { Sidebar } from './Sidebar'
 export { Header } from './Header'
+export { BottomNav } from './BottomNav'
 export { DashboardLayout } from './dashboard-layout'
+export { ThemeProvider, useTheme } from './ThemeProvider'

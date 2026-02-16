@@ -11,6 +11,7 @@ import {
   Moon,
   User,
   Settings,
+  Shield,
   LogOut,
   Home,
   BookOpen,
@@ -166,8 +167,19 @@ export function Header() {
                   className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground-secondary dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                 >
                   <Settings className="w-4 h-4" />
-                  Configuración
+                  Configuracion
                 </Link>
+
+                {(profile?.role === 'super_admin' || profile?.role === 'admin') && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setShowDropdown(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors"
+                  >
+                    <Shield className="w-4 h-4" />
+                    Panel Admin
+                  </Link>
+                )}
 
                 <div className="border-t border-border-light dark:border-slate-700 mt-1 pt-1">
                   <button

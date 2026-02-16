@@ -9,6 +9,7 @@ import {
   Users,
   Trophy,
   MessageCircle,
+  Shield,
 } from 'lucide-react'
 import { useUser } from '@/hooks/useUser'
 
@@ -53,6 +54,19 @@ export function Sidebar() {
             </Link>
           )
         })}
+
+        {(profile?.role === 'super_admin' || profile?.role === 'admin') && (
+          <>
+            <div className="border-t border-border-light dark:border-slate-700 my-2" />
+            <Link
+              href="/admin"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-all"
+            >
+              <Shield className="w-5 h-5" />
+              Panel Admin
+            </Link>
+          </>
+        )}
       </nav>
 
       {/* User Info */}

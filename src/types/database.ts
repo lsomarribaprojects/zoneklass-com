@@ -18,6 +18,55 @@ export interface Profile {
 }
 
 // ============================================
+// Tipos de Cursos
+// ============================================
+
+export type CourseCategory = 'Programación' | 'IA' | 'Diseño' | 'Marketing' | 'Negocios'
+export type CourseLevel = 'Principiante' | 'Intermedio' | 'Avanzado'
+
+export interface Course {
+  id: string
+  title: string
+  description: string | null
+  slug: string
+  category: CourseCategory
+  level: CourseLevel
+  thumbnail_url: string | null
+  price: number
+  is_published: boolean
+  created_by: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Module {
+  id: string
+  course_id: string
+  title: string
+  order_index: number
+  created_at: string
+}
+
+export interface Lesson {
+  id: string
+  module_id: string
+  title: string
+  content: string | null
+  video_url: string | null
+  order_index: number
+  duration_minutes: number
+  created_at: string
+}
+
+export interface CourseWithModules extends Course {
+  modules: ModuleWithLessons[]
+}
+
+export interface ModuleWithLessons extends Module {
+  lessons: Lesson[]
+}
+
+// ============================================
 // Permisos por Rol
 // ============================================
 
@@ -62,6 +111,21 @@ export interface Database {
         Row: Profile
         Insert: Omit<Profile, 'created_at' | 'updated_at' | 'xp' | 'level' | 'streak_days'>
         Update: Partial<Omit<Profile, 'id' | 'created_at'>>
+      }
+      courses: {
+        Row: Course
+        Insert: Omit<Course, 'id' | 'created_at' | 'updated_at' | 'is_published'>
+        Update: Partial<Omit<Course, 'id' | 'created_at' | 'created_by'>>
+      }
+      modules: {
+        Row: Module
+        Insert: Omit<Module, 'id' | 'created_at'>
+        Update: Partial<Omit<Module, 'id' | 'created_at' | 'course_id'>>
+      }
+      lessons: {
+        Row: Lesson
+        Insert: Omit<Lesson, 'id' | 'created_at'>
+        Update: Partial<Omit<Lesson, 'id' | 'created_at' | 'module_id'>>
       }
     }
   }

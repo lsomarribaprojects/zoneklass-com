@@ -3,3 +3,5 @@ export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 export { Input } from './input'
 export { Select } from './select'
 export { Badge } from './badge'
+export { Textarea } from './textarea'
+export { Modal } from './modal'

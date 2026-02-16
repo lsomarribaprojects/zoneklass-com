@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)",
+      "Bash(test:*)",
+      "mcp__playwright__browser_take_screenshot"
+    ]
+  }
+}

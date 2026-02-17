@@ -17,9 +17,9 @@ const SIDEBAR_ITEMS = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Mis Cursos', href: '/dashboard', icon: BookOpen },
   { label: 'Explorar Cursos', href: '/cursos', icon: Compass },
-  { label: 'Comunidad', href: '/members', icon: Users },
+  { label: 'Comunidad', href: '/comunidad', icon: Users },
   { label: 'Leaderboard', href: '/leaderboard', icon: Trophy },
-  { label: 'Mensajes', href: '/members', icon: MessageCircle },
+  { label: 'Mensajes', href: '/mensajes', icon: MessageCircle },
 ]
 
 export function Sidebar() {

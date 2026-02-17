@@ -13,7 +13,7 @@ import {
 const BOTTOM_NAV_ITEMS = [
   { label: 'Inicio', href: '/dashboard', icon: Home },
   { label: 'Cursos', href: '/cursos', icon: BookOpen },
-  { label: 'Comunidad', href: '/members', icon: Users },
+  { label: 'Comunidad', href: '/comunidad', icon: Users },
   { label: 'Ranking', href: '/leaderboard', icon: Trophy },
   { label: 'Perfil', href: '/settings', icon: User },
 ]

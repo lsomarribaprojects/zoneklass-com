@@ -140,6 +140,83 @@ export interface InviteLinkWithStats extends InviteLink {
 }
 
 // ============================================
+// Comunidad
+// ============================================
+
+export type PostCategory = 'general' | 'pregunta' | 'recurso' | 'logro' | 'presentacion'
+export type NotificationType = 'like' | 'comment' | 'reply' | 'dm' | 'badge' | 'level_up'
+
+export interface Post {
+  id: string
+  author_id: string
+  title: string
+  content: string
+  category: PostCategory
+  likes_count: number
+  comments_count: number
+  is_pinned: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface PostWithAuthor extends Post {
+  author: Pick<Profile, 'id' | 'full_name' | 'avatar_url' | 'level'>
+  has_liked?: boolean
+}
+
+export interface Comment {
+  id: string
+  post_id: string
+  author_id: string
+  content: string
+  parent_id: string | null
+  created_at: string
+}
+
+export interface CommentWithAuthor extends Comment {
+  author: Pick<Profile, 'id' | 'full_name' | 'avatar_url' | 'level'>
+  replies?: CommentWithAuthor[]
+}
+
+export interface PostLike {
+  id: string
+  post_id: string
+  user_id: string
+  created_at: string
+}
+
+export interface DirectMessage {
+  id: string
+  sender_id: string
+  receiver_id: string
+  content: string
+  is_read: boolean
+  created_at: string
+}
+
+export interface DirectMessageWithUser extends DirectMessage {
+  other_user: Pick<Profile, 'id' | 'full_name' | 'avatar_url' | 'level'>
+}
+
+export interface Conversation {
+  user: Pick<Profile, 'id' | 'full_name' | 'avatar_url' | 'level'>
+  last_message: string
+  last_message_at: string
+  unread_count: number
+}
+
+export interface Notification {
+  id: string
+  user_id: string
+  type: NotificationType
+  title: string
+  message: string
+  link: string | null
+  is_read: boolean
+  created_at: string
+}
+
+// ============================================
 // Permisos por Rol
 // ============================================
 
@@ -219,6 +296,31 @@ export interface Database {
         Row: InviteTracking
         Insert: Omit<InviteTracking, 'id' | 'created_at'>
         Update: never
+      }
+      posts: {
+        Row: Post
+        Insert: Omit<Post, 'id' | 'created_at' | 'updated_at' | 'likes_count' | 'comments_count' | 'is_pinned'>
+        Update: Partial<Omit<Post, 'id' | 'created_at' | 'author_id'>>
+      }
+      comments: {
+        Row: Comment
+        Insert: Omit<Comment, 'id' | 'created_at'>
+        Update: never
+      }
+      post_likes: {
+        Row: PostLike
+        Insert: Omit<PostLike, 'id' | 'created_at'>
+        Update: never
+      }
+      direct_messages: {
+        Row: DirectMessage
+        Insert: Omit<DirectMessage, 'id' | 'created_at' | 'is_read'>
+        Update: Partial<Pick<DirectMessage, 'is_read'>>
+      }
+      notifications: {
+        Row: Notification
+        Insert: Omit<Notification, 'id' | 'created_at' | 'is_read'>
+        Update: Partial<Pick<Notification, 'is_read'>>
       }
     }
   }

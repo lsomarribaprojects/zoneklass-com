@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Bell,
   Menu,
   X,
   Sun,
@@ -21,11 +20,12 @@ import {
 import { useTheme } from './ThemeProvider'
 import { useUser } from '@/hooks/useUser'
 import { signout } from '@/actions/auth'
+import { NotificationDropdown } from '@/features/community/components/NotificationDropdown'
 
 const NAV_ITEMS = [
   { label: 'Inicio', href: '/dashboard', icon: Home },
   { label: 'Cursos', href: '/cursos', icon: BookOpen },
-  { label: 'Comunidad', href: '/members', icon: Users },
+  { label: 'Comunidad', href: '/comunidad', icon: Users },
   { label: 'Leaderboard', href: '/leaderboard', icon: Trophy },
 ]
 
@@ -115,13 +115,7 @@ export function Header() {
             )}
           </button>
 
-          <button
-            className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-            aria-label="Notificaciones"
-          >
-            <Bell className="w-5 h-5 text-foreground-secondary dark:text-slate-400" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-error-500 rounded-full" />
-          </button>
+          <NotificationDropdown />
 
           {/* User Avatar Dropdown */}
           <div className="relative" ref={dropdownRef}>

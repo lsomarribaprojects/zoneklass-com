@@ -11,7 +11,7 @@ import { ModuleFormModal } from '@/features/courses/components/admin/ModuleFormM
 import { deleteCourse, togglePublish } from '@/actions/courses'
 import { deleteModule, reorderModules } from '@/actions/modules'
 import type { CourseWithModules, Module } from '@/types/database'
-import { Plus, Loader2, Trash2, Eye, EyeOff } from 'lucide-react'
+import { Plus, Loader2, Trash2, Eye, EyeOff, Link2 } from 'lucide-react'
 
 export default function EditCoursePage() {
   const params = useParams()
@@ -228,6 +228,14 @@ export default function EditCoursePage() {
             leftIcon={course.is_published ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           >
             {course.is_published ? 'Despublicar Curso' : 'Publicar Curso'}
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/admin/courses/${courseId}/links`)}
+            leftIcon={<Link2 className="w-4 h-4" />}
+          >
+            Links de Invitacion
           </Button>
 
           <Button

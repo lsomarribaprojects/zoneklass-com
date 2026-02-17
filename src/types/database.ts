@@ -104,6 +104,42 @@ export interface CourseDetail extends CourseWithModules {
 }
 
 // ============================================
+// Invite Links
+// ============================================
+
+export type InviteSource = 'twitter' | 'whatsapp' | 'email' | 'website' | 'other'
+export type InviteAction = 'click' | 'register' | 'enroll'
+
+export interface InviteLink {
+  id: string
+  course_id: string
+  code: string
+  label: string
+  source: InviteSource
+  expires_at: string | null
+  max_uses: number
+  current_uses: number
+  is_active: boolean
+  created_by: string
+  created_at: string
+}
+
+export interface InviteTracking {
+  id: string
+  invite_link_id: string
+  user_id: string | null
+  action: InviteAction
+  ip_hash: string | null
+  created_at: string
+}
+
+export interface InviteLinkWithStats extends InviteLink {
+  clicks: number
+  registrations: number
+  enrollments: number
+}
+
+// ============================================
 // Permisos por Rol
 // ============================================
 
@@ -172,6 +208,16 @@ export interface Database {
       lesson_progress: {
         Row: LessonProgress
         Insert: Omit<LessonProgress, 'id' | 'completed_at' | 'created_at'>
+        Update: never
+      }
+      invite_links: {
+        Row: InviteLink
+        Insert: Omit<InviteLink, 'id' | 'created_at' | 'current_uses' | 'is_active'>
+        Update: Partial<Pick<InviteLink, 'label' | 'source' | 'expires_at' | 'max_uses' | 'current_uses' | 'is_active'>>
+      }
+      invite_tracking: {
+        Row: InviteTracking
+        Insert: Omit<InviteTracking, 'id' | 'created_at'>
         Update: never
       }
     }

@@ -36,7 +36,28 @@ export const enrollmentSchema = z.object({
   course_id: z.string().uuid('ID de curso invalido'),
 })
 
+export const INVITE_SOURCES = [
+  'twitter', 'whatsapp', 'email', 'website', 'other',
+] as const
+
+export const INVITE_SOURCE_LABELS: Record<typeof INVITE_SOURCES[number], string> = {
+  twitter: 'Twitter / X',
+  whatsapp: 'WhatsApp',
+  email: 'Email',
+  website: 'Website',
+  other: 'Otro',
+}
+
+export const inviteLinkSchema = z.object({
+  label: z.string().min(2, 'El label debe tener al menos 2 caracteres').max(100),
+  source: z.enum(INVITE_SOURCES),
+  expires_at: z.string().optional().or(z.literal('')),
+  max_uses: z.coerce.number().int().min(0).optional().default(0),
+  course_id: z.string().uuid(),
+})
+
 export type CourseFormData = z.infer<typeof courseSchema>
 export type ModuleFormData = z.infer<typeof moduleSchema>
 export type LessonFormData = z.infer<typeof lessonSchema>
 export type EnrollmentFormData = z.infer<typeof enrollmentSchema>
+export type InviteLinkFormData = z.infer<typeof inviteLinkSchema>

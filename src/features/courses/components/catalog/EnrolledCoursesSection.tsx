@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { BookOpen, Clock, ArrowRight, Compass } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
+import { getBatchCourseProgress } from '@/actions/progress'
 import type { CourseWithStats, CourseCategory, CourseLevel } from '@/types/database'
 
 const CATEGORY_GRADIENTS: Record<string, string> = {
@@ -30,6 +31,7 @@ export function EnrolledCoursesSection() {
   const { profile } = useUser()
   const [courses, setCourses] = useState<EnrolledCourse[]>([])
   const [loading, setLoading] = useState(true)
+  const [progressMap, setProgressMap] = useState<Record<string, { completed: number; total: number; percentage: number }>>({})
 
   useEffect(() => {
     if (!profile) {
@@ -90,6 +92,15 @@ export function EnrolledCoursesSection() {
             }
           })
         setCourses(mapped)
+
+        // Fetch progress for all courses in batch
+        if (mapped.length > 0) {
+          const courseIds = mapped.map(c => c.id)
+          const progressResult = await getBatchCourseProgress(courseIds)
+          if (progressResult.data) {
+            setProgressMap(progressResult.data)
+          }
+        }
       }
       setLoading(false)
     }
@@ -164,6 +175,8 @@ export function EnrolledCoursesSection() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {courses.map(course => {
           const gradient = CATEGORY_GRADIENTS[course.category] || 'from-violet-500 to-purple-600'
+          const progress = progressMap[course.id]
+          const percentage = progress?.percentage ?? 0
 
           return (
             <Link
@@ -204,16 +217,16 @@ export function EnrolledCoursesSection() {
                   </span>
                 </div>
 
-                {/* Progress bar placeholder (0% for now) */}
+                {/* Progress bar with real data */}
                 <div className="flex items-center gap-2">
                   <div className="flex-1 h-2 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-primary-400 to-primary-600 rounded-full transition-all duration-500"
-                      style={{ width: '0%' }}
+                      style={{ width: `${percentage}%` }}
                     />
                   </div>
                   <span className="text-xs font-medium text-foreground-muted dark:text-slate-500">
-                    0%
+                    {percentage}%
                   </span>
                 </div>
               </div>

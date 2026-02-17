@@ -78,6 +78,19 @@ export interface CourseEnrollment {
   completed_at: string | null
 }
 
+// ============================================
+// Progreso de Lecciones
+// ============================================
+
+export interface LessonProgress {
+  id: string
+  user_id: string
+  lesson_id: string
+  course_id: string
+  completed_at: string
+  created_at: string
+}
+
 export interface CourseWithStats extends Course {
   modules_count: number
   lessons_count: number
@@ -155,6 +168,11 @@ export interface Database {
         Row: CourseEnrollment
         Insert: Omit<CourseEnrollment, 'id' | 'enrolled_at' | 'completed_at'>
         Update: Partial<Pick<CourseEnrollment, 'completed_at'>>
+      }
+      lesson_progress: {
+        Row: LessonProgress
+        Insert: Omit<LessonProgress, 'id' | 'completed_at' | 'created_at'>
+        Update: never
       }
     }
   }

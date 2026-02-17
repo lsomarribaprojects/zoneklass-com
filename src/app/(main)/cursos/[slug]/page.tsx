@@ -12,8 +12,10 @@ import {
   ChevronUp,
   Lock,
   PlayCircle,
+  CheckCircle,
 } from 'lucide-react'
 import { getCourseBySlug } from '@/actions/enrollments'
+import { getLessonProgress } from '@/actions/progress'
 import { EnrollButton } from '@/features/courses/components/catalog'
 import type { CourseDetail, CourseLevel } from '@/types/database'
 
@@ -46,6 +48,7 @@ export default function CourseDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [expandedModules, setExpandedModules] = useState<string[]>([])
+  const [completedLessonIds, setCompletedLessonIds] = useState<string[]>([])
 
   useEffect(() => {
     async function load() {
@@ -57,6 +60,13 @@ export default function CourseDetailPage() {
         // Expandir el primer modulo por defecto
         if (result.data.modules.length > 0) {
           setExpandedModules([result.data.modules[0].id])
+        }
+        // Cargar progreso si esta inscrito
+        if (result.data.is_enrolled) {
+          const progressResult = await getLessonProgress(result.data.id)
+          if (progressResult.data) {
+            setCompletedLessonIds(progressResult.data)
+          }
         }
       }
       setLoading(false)
@@ -108,6 +118,12 @@ export default function CourseDetailPage() {
   const totalDuration = course.modules.reduce(
     (sum, m) => sum + m.lessons.reduce((s, l) => s + l.duration_minutes, 0), 0
   )
+  const progressPercentage = totalLessons > 0 ? Math.round((completedLessonIds.length / totalLessons) * 100) : 0
+
+  // Find the first incomplete lesson (or first lesson if none completed)
+  const allLessons = course.modules.flatMap(m => m.lessons)
+  const nextUncompletedLesson = allLessons.find(l => !completedLessonIds.includes(l.id))
+  const continueLessonId = nextUncompletedLesson?.id || allLessons[0]?.id
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
@@ -174,13 +190,46 @@ export default function CourseDetailPage() {
             </div>
           </div>
 
-          {/* Enroll Button */}
-          <EnrollButton
-            courseId={course.id}
-            isEnrolled={course.is_enrolled}
-            courseSlug={course.slug}
-            price={course.price}
-          />
+          {/* Progress bar (only for enrolled users) */}
+          {course.is_enrolled && (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-foreground dark:text-slate-200">
+                  Tu progreso
+                </span>
+                <span className="text-sm font-semibold text-primary-500">
+                  {progressPercentage}%
+                </span>
+              </div>
+              <div className="h-2.5 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-primary-400 to-primary-600 rounded-full transition-all duration-500"
+                  style={{ width: `${progressPercentage}%` }}
+                />
+              </div>
+              <p className="text-xs text-foreground-muted dark:text-slate-500 mt-1">
+                {completedLessonIds.length} de {totalLessons} lecciones completadas
+              </p>
+            </div>
+          )}
+
+          {/* Enroll / Continue Button */}
+          {course.is_enrolled && continueLessonId ? (
+            <Link
+              href={`/cursos/${course.slug}/leccion/${continueLessonId}`}
+              className="flex items-center justify-center gap-2 w-full px-6 py-3.5 rounded-xl text-base font-semibold bg-primary-500 hover:bg-primary-600 text-white transition-colors shadow-lg shadow-primary-500/25"
+            >
+              <PlayCircle className="w-5 h-5" />
+              {completedLessonIds.length > 0 ? 'Continuar Curso' : 'Comenzar Curso'}
+            </Link>
+          ) : (
+            <EnrollButton
+              courseId={course.id}
+              isEnrolled={course.is_enrolled}
+              courseSlug={course.slug}
+              price={course.price}
+            />
+          )}
         </div>
       </div>
 
@@ -194,6 +243,7 @@ export default function CourseDetailPage() {
           {course.modules.map((mod, modIndex) => {
             const isExpanded = expandedModules.includes(mod.id)
             const moduleDuration = mod.lessons.reduce((sum, l) => sum + l.duration_minutes, 0)
+            const completedInModule = mod.lessons.filter(l => completedLessonIds.includes(l.id)).length
 
             return (
               <div
@@ -214,7 +264,7 @@ export default function CourseDetailPage() {
                         {mod.title}
                       </h3>
                       <p className="text-xs text-foreground-muted dark:text-slate-500 mt-0.5">
-                        {mod.lessons.length} lecciones &middot; {formatDuration(moduleDuration)}
+                        {course.is_enrolled ? `${completedInModule}/` : ''}{mod.lessons.length} lecciones &middot; {formatDuration(moduleDuration)}
                       </p>
                     </div>
                   </div>
@@ -228,28 +278,42 @@ export default function CourseDetailPage() {
                 {/* Lessons List */}
                 {isExpanded && (
                   <div className="border-t border-border-light dark:border-slate-700">
-                    {mod.lessons.map((lesson) => (
-                      <div
-                        key={lesson.id}
-                        className="flex items-center gap-3 px-4 sm:px-5 py-3 border-b last:border-b-0 border-border-light dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-750 transition-colors"
-                      >
-                        {course.is_enrolled ? (
-                          <PlayCircle className="w-5 h-5 text-primary-500 flex-shrink-0" />
-                        ) : (
+                    {mod.lessons.map((lesson) => {
+                      const isLessonCompleted = completedLessonIds.includes(lesson.id)
+
+                      return course.is_enrolled ? (
+                        <Link
+                          key={lesson.id}
+                          href={`/cursos/${course.slug}/leccion/${lesson.id}`}
+                          className="flex items-center gap-3 px-4 sm:px-5 py-3 border-b last:border-b-0 border-border-light dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-750 transition-colors"
+                        >
+                          {isLessonCompleted ? (
+                            <CheckCircle className="w-5 h-5 text-success-500 flex-shrink-0" />
+                          ) : (
+                            <PlayCircle className="w-5 h-5 text-primary-500 flex-shrink-0" />
+                          )}
+                          <span className="flex-1 text-sm text-foreground dark:text-slate-200">
+                            {lesson.title}
+                          </span>
+                          <span className="text-xs text-foreground-muted dark:text-slate-500 flex-shrink-0">
+                            {lesson.duration_minutes} min
+                          </span>
+                        </Link>
+                      ) : (
+                        <div
+                          key={lesson.id}
+                          className="flex items-center gap-3 px-4 sm:px-5 py-3 border-b last:border-b-0 border-border-light dark:border-slate-700"
+                        >
                           <Lock className="w-4 h-4 text-foreground-muted dark:text-slate-500 flex-shrink-0" />
-                        )}
-                        <span className={`flex-1 text-sm ${
-                          course.is_enrolled
-                            ? 'text-foreground dark:text-slate-200'
-                            : 'text-foreground-secondary dark:text-slate-400'
-                        }`}>
-                          {lesson.title}
-                        </span>
-                        <span className="text-xs text-foreground-muted dark:text-slate-500 flex-shrink-0">
-                          {lesson.duration_minutes} min
-                        </span>
-                      </div>
-                    ))}
+                          <span className="flex-1 text-sm text-foreground-secondary dark:text-slate-400">
+                            {lesson.title}
+                          </span>
+                          <span className="text-xs text-foreground-muted dark:text-slate-500 flex-shrink-0">
+                            {lesson.duration_minutes} min
+                          </span>
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
               </div>

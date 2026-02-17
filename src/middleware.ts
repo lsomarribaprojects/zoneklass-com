@@ -11,6 +11,7 @@ export const config = {
     '/admin/:path*',
     '/comunidad/:path*',
     '/mensajes/:path*',
+    '/leaderboard/:path*',
     '/login',
     '/signup',
     '/forgot-password',

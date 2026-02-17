@@ -140,6 +140,51 @@ export interface InviteLinkWithStats extends InviteLink {
 }
 
 // ============================================
+// Gamificación
+// ============================================
+
+export type XpSource = 'lesson_complete' | 'course_complete' | 'post_create' | 'comment_create' | 'daily_login' | 'streak_bonus' | 'badge_earned'
+export type BadgeRequirement = 'lessons_completed' | 'courses_completed' | 'xp_earned' | 'streak_days' | 'posts_created' | 'comments_created'
+
+export interface XpTransaction {
+  id: string
+  user_id: string
+  amount: number
+  source: XpSource
+  description: string
+  created_at: string
+}
+
+export interface Badge {
+  id: string
+  name: string
+  description: string
+  icon_name: string
+  color: string
+  requirement_type: BadgeRequirement
+  requirement_value: number
+  created_at: string
+}
+
+export interface UserBadge {
+  id: string
+  user_id: string
+  badge_id: string
+  earned_at: string
+}
+
+export interface UserBadgeWithDetails extends UserBadge {
+  badge: Badge
+}
+
+export interface LeaderboardEntry {
+  position: number
+  profile: Pick<Profile, 'id' | 'full_name' | 'avatar_url' | 'xp' | 'level'>
+  badges_count: number
+  is_current_user: boolean
+}
+
+// ============================================
 // Comunidad
 // ============================================
 
@@ -321,6 +366,21 @@ export interface Database {
         Row: Notification
         Insert: Omit<Notification, 'id' | 'created_at' | 'is_read'>
         Update: Partial<Pick<Notification, 'is_read'>>
+      }
+      xp_transactions: {
+        Row: XpTransaction
+        Insert: Omit<XpTransaction, 'id' | 'created_at'>
+        Update: never
+      }
+      badges: {
+        Row: Badge
+        Insert: Omit<Badge, 'id' | 'created_at'>
+        Update: never
+      }
+      user_badges: {
+        Row: UserBadge
+        Insert: Omit<UserBadge, 'id' | 'earned_at'>
+        Update: never
       }
     }
   }

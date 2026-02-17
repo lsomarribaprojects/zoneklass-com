@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { awardXP, checkAndAwardBadges } from './gamification'
 import type {
   PostCategory,
   NotificationType,
@@ -179,7 +180,11 @@ export async function createPost(formData: FormData) {
     return { error: error.message }
   }
 
-  // 4. Revalidar y retornar
+  // 4. Otorgar XP y verificar badges
+  await awardXP(user.id, 5, 'post_create', 'Post creado en la comunidad')
+  await checkAndAwardBadges(user.id)
+
+  // 5. Revalidar y retornar
   revalidatePath('/comunidad')
   return { error: null, data }
 }
@@ -449,7 +454,11 @@ export async function createComment(postId: string, content: string, parentId?: 
     }
   }
 
-  // 6. Revalidar
+  // 6. Otorgar XP y verificar badges
+  await awardXP(user.id, 2, 'comment_create', 'Comentario en la comunidad')
+  await checkAndAwardBadges(user.id)
+
+  // 7. Revalidar
   revalidatePath('/comunidad')
   return { error: null, data }
 }

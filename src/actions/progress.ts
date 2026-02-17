@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { awardXP, checkAndAwardBadges } from './gamification'
 
 // ============================================
 // Auth helper
@@ -63,6 +64,39 @@ export async function completeLesson(lessonId: string, courseId: string): Promis
   if (error) {
     return { error: error.message, alreadyCompleted: false }
   }
+
+  // Otorgar XP por completar lección
+  await awardXP(user.id, 10, 'lesson_complete', 'Lección completada')
+
+  // Verificar si completó el curso
+  const { data: modules } = await supabase
+    .from('modules')
+    .select('id, lessons(id)')
+    .eq('course_id', courseId)
+
+  const totalLessons = (modules || []).reduce(
+    (sum, m) => sum + ((m.lessons as unknown as Array<{ id: string }>)?.length || 0), 0
+  )
+  const { data: progress } = await supabase
+    .from('lesson_progress')
+    .select('lesson_id')
+    .eq('user_id', user.id)
+    .eq('course_id', courseId)
+
+  if ((progress || []).length >= totalLessons && totalLessons > 0) {
+    // Marcar curso como completado
+    await supabase
+      .from('course_enrollments')
+      .update({ completed_at: new Date().toISOString() })
+      .eq('user_id', user.id)
+      .eq('course_id', courseId)
+
+    // XP bonus por completar curso
+    await awardXP(user.id, 100, 'course_complete', 'Curso completado')
+  }
+
+  // Verificar badges
+  await checkAndAwardBadges(user.id)
 
   revalidatePath('/cursos', 'layout')
   revalidatePath('/dashboard', 'layout')

@@ -5,6 +5,7 @@ import { useUser } from '@/hooks/useUser'
 import { BookOpen, Flame, Star, TrendingUp } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { EnrolledCoursesSection } from '@/features/courses/components/catalog'
+import { ProfileBadges } from '@/features/gamification/components/ProfileBadges'
 
 export default function DashboardPage() {
   const { profile, loading } = useUser()
@@ -98,6 +99,11 @@ export default function DashboardPage() {
 
       {/* Enrolled Courses */}
       <EnrolledCoursesSection />
+
+      {/* Badges */}
+      <div className="mt-8">
+        <ProfileBadges />
+      </div>
     </div>
   )
 }

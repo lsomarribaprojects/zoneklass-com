@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { getCourseBySlug } from '@/actions/enrollments'
 import { getLessonProgress, completeLesson } from '@/actions/progress'
+import { useChatStore } from '@/features/hanna/store/chatStore'
 import {
   LessonHeader,
   CourseSidebar,
@@ -103,6 +104,20 @@ export default function LessonPage() {
 
     fetchData()
   }, [slug, lessonId, router])
+
+  // Set lesson context for Hanna AI tutor
+  const { setLessonContext, clearLessonContext } = useChatStore()
+
+  useEffect(() => {
+    if (course && currentLesson) {
+      setLessonContext({
+        lessonTitle: currentLesson.title,
+        courseTitle: course.title,
+        lessonContent: currentLesson.content?.slice(0, 2000) ?? '',
+      })
+    }
+    return () => clearLessonContext()
+  }, [course, currentLesson, setLessonContext, clearLessonContext])
 
   // Complete lesson handler
   const handleComplete = async () => {

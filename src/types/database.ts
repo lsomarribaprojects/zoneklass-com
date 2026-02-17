@@ -296,6 +296,50 @@ export function hasPermission(role: UserRole, permission: Permission): boolean {
 }
 
 // ============================================
+// Hanna AI Tutor
+// ============================================
+
+export type HannaMode = 'tutora' | 'code_review' | 'orientadora' | 'motivadora' | 'estudio' | 'evaluadora'
+
+export interface HannaConversation {
+  id: string
+  user_id: string
+  title: string
+  mode: HannaMode
+  messages: HannaChatMessage[]
+  rating: number | null
+  created_at: string
+  updated_at: string
+}
+
+export interface HannaChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+  timestamp: string
+}
+
+export interface HannaConfig {
+  id: string
+  mode: HannaMode
+  system_prompt: string
+  model: string
+  temperature: number
+  max_tokens: number
+  is_active: boolean
+  updated_at: string
+}
+
+export interface LessonEmbedding {
+  id: string
+  lesson_id: string
+  course_id: string
+  chunk_text: string
+  chunk_index: number
+  embedding: number[] | null
+  created_at: string
+}
+
+// ============================================
 // Database type para Supabase client
 // ============================================
 
@@ -380,6 +424,21 @@ export interface Database {
       user_badges: {
         Row: UserBadge
         Insert: Omit<UserBadge, 'id' | 'earned_at'>
+        Update: never
+      }
+      hanna_conversations: {
+        Row: HannaConversation
+        Insert: Omit<HannaConversation, 'id' | 'created_at' | 'updated_at' | 'rating'>
+        Update: Partial<Pick<HannaConversation, 'title' | 'messages' | 'rating' | 'updated_at'>>
+      }
+      hanna_config: {
+        Row: HannaConfig
+        Insert: Omit<HannaConfig, 'id' | 'updated_at'>
+        Update: Partial<Omit<HannaConfig, 'id'>>
+      }
+      lesson_embeddings: {
+        Row: LessonEmbedding
+        Insert: Omit<LessonEmbedding, 'id' | 'created_at'>
         Update: never
       }
     }

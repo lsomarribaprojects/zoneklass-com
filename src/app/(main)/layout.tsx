@@ -2,6 +2,7 @@
 
 import { ThemeProvider } from '@/components/layout/ThemeProvider'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
+import { ChatWidget } from '@/features/hanna/components'
 
 export default function MainLayout({
   children,
@@ -13,6 +14,7 @@ export default function MainLayout({
       <DashboardLayout>
         {children}
       </DashboardLayout>
+      <ChatWidget />
     </ThemeProvider>
   )
 }

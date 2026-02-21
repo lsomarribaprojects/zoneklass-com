@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
+import { sendWelcomeEmail } from './emails'
 
 const loginSchema = z.object({
   email: z.string().email('Email invalido'),
@@ -67,6 +68,9 @@ export async function signup(formData: FormData) {
   if (error) {
     return { error: error.message }
   }
+
+  // Send welcome email (fire-and-forget, uses form data since profile may not exist yet)
+  sendWelcomeEmail(parsed.data.email, parsed.data.full_name).catch(console.error)
 
   revalidatePath('/', 'layout')
   redirect('/dashboard')

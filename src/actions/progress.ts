@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { awardXP, checkAndAwardBadges } from './gamification'
+import { sendCompletionEmail } from './emails'
 
 // ============================================
 // Auth helper
@@ -93,6 +94,9 @@ export async function completeLesson(lessonId: string, courseId: string): Promis
 
     // XP bonus por completar curso
     await awardXP(user.id, 100, 'course_complete', 'Curso completado')
+
+    // Send course completion email (fire-and-forget)
+    sendCompletionEmail(user.id, courseId).catch(console.error)
   }
 
   // Verificar badges

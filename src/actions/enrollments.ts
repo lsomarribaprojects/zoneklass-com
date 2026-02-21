@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import type { CourseWithStats, CourseDetail, CourseCategory, CourseLevel } from '@/types/database'
+import { sendEnrollmentEmail } from './emails'
 
 // ============================================
 // Auth helper (cualquier usuario autenticado)
@@ -215,6 +216,9 @@ export async function enrollInCourse(courseId: string): Promise<{
   if (error) {
     return { error: error.message }
   }
+
+  // Send enrollment email (fire-and-forget)
+  sendEnrollmentEmail(user.id, courseId).catch(console.error)
 
   revalidatePath('/cursos', 'layout')
   revalidatePath('/dashboard', 'layout')

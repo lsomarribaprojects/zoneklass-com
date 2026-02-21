@@ -340,6 +340,23 @@ export interface LessonEmbedding {
 }
 
 // ============================================
+// Email Preferences
+// ============================================
+
+export interface EmailPreferences {
+  id: string
+  user_id: string
+  welcome: boolean
+  enrollment: boolean
+  completion: boolean
+  badges: boolean
+  weekly_digest: boolean
+  marketing: boolean
+  created_at: string
+  updated_at: string
+}
+
+// ============================================
 // Database type para Supabase client
 // ============================================
 
@@ -440,6 +457,11 @@ export interface Database {
         Row: LessonEmbedding
         Insert: Omit<LessonEmbedding, 'id' | 'created_at'>
         Update: never
+      }
+      email_preferences: {
+        Row: EmailPreferences
+        Insert: Omit<EmailPreferences, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<EmailPreferences, 'id' | 'user_id' | 'created_at'>>
       }
     }
   }

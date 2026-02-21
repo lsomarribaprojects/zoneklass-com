@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { sendBadgeEmail } from './emails'
 import type {
   XpSource,
   Badge,
@@ -247,6 +248,9 @@ export async function checkAndAwardBadges(userId: string): Promise<{
       if (notifError) {
         console.error(`Error creating notification for badge ${badge.name}:`, notifError)
       }
+
+      // Send badge email (fire-and-forget)
+      sendBadgeEmail(userId, badge.id).catch(console.error)
 
       newlyEarnedNames.push(badge.name)
     }

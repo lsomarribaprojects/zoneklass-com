@@ -44,9 +44,11 @@ const config: Config = {
         success: {
           50: '#ECFDF5',
           100: '#D1FAE5',
+          400: '#34D399',
           500: '#10B981',
           600: '#059669',
           700: '#047857',
+          950: '#022C22',
         },
         warning: {
           50: '#FFFBEB',
@@ -58,9 +60,13 @@ const config: Config = {
         error: {
           50: '#FEF2F2',
           100: '#FEE2E2',
+          200: '#FECACA',
+          400: '#F87171',
           500: '#EF4444',
           600: '#DC2626',
           700: '#B91C1C',
+          900: '#7F1D1D',
+          950: '#450A0A',
         },
         border: {
           DEFAULT: '#E2E8F0',
@@ -124,7 +130,9 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 }
 
 export default config

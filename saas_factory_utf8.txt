@@ -1,0 +1,33 @@
+﻿
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$ProjectName
+    )
+
+    $repoUrl = "https://github.com/saas-factory-community/saas-factory-setup.git"
+    $targetDir = Join-Path (Get-Location) $ProjectName
+
+    if (Test-Path $targetDir) {
+        Write-Error "Directory '$ProjectName' already exists."
+        return
+    }
+
+    Write-Host "Creating new SaaS project: $ProjectName" -ForegroundColor Cyan
+    git clone $repoUrl $targetDir
+
+    if ($LASTEXITCODE -eq 0) {
+        Set-Location $targetDir
+        Write-Host "Successfully cloned repository." -ForegroundColor Green
+        
+        if (Test-Path "package.json") {
+            Write-Host "Installing dependencies..." -ForegroundColor Cyan
+            npm install
+        } else {
+            Write-Warning "package.json not found. Skipping npm install."
+        }
+        
+        Write-Host "Setup complete! Your project is at: $targetDir" -ForegroundColor Green
+    } else {
+        Write-Error "Failed to clone repository."
+    }
+

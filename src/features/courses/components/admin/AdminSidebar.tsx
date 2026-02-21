@@ -1,35 +1,14 @@
 'use client'
-import { LayoutDashboard, BookOpen, Users, BarChart3, ArrowLeft } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Users, Bot, Link2, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const navItems = [
-  {
-    label: 'Dashboard',
-    href: '/admin',
-    icon: LayoutDashboard,
-    disabled: false,
-  },
-  {
-    label: 'Cursos',
-    href: '/admin/courses',
-    icon: BookOpen,
-    disabled: false,
-  },
-  {
-    label: 'Usuarios',
-    href: '/admin/users',
-    icon: Users,
-    disabled: true,
-    tooltip: 'Proximamente',
-  },
-  {
-    label: 'Metricas',
-    href: '/admin/analytics',
-    icon: BarChart3,
-    disabled: true,
-    tooltip: 'Proximamente',
-  },
+  { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+  { label: 'Cursos', href: '/admin/courses', icon: BookOpen },
+  { label: 'Usuarios', href: '/admin/users', icon: Users },
+  { label: 'Hanna IA', href: '/admin/hanna', icon: Bot },
+  { label: 'Invite Links', href: '/admin/invite-links', icon: Link2 },
 ]
 
 export function AdminSidebar() {
@@ -53,24 +32,6 @@ export function AdminSidebar() {
           const isActive = item.href === '/admin'
             ? pathname === '/admin'
             : pathname.startsWith(item.href)
-
-          if (item.disabled) {
-            return (
-              <div
-                key={item.href}
-                className="relative group flex items-center gap-3 px-4 py-3 rounded-xl text-foreground-muted cursor-not-allowed opacity-50"
-                title={item.tooltip}
-              >
-                <Icon className="w-5 h-5" />
-                <span className="text-sm font-medium">{item.label}</span>
-                {item.tooltip && (
-                  <span className="absolute left-full ml-2 px-2 py-1 bg-gray-900 dark:bg-slate-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                    {item.tooltip}
-                  </span>
-                )}
-              </div>
-            )
-          }
 
           return (
             <Link

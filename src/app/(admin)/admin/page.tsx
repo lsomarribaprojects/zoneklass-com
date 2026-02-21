@@ -1,25 +1,22 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { BookOpen, Globe, FileEdit, Users, Plus, ArrowRight } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { Users, UserCheck, BookOpen, Globe, GraduationCap, CheckCircle2 } from 'lucide-react'
 import { useUser } from '@/hooks/useUser'
-import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import type { Course } from '@/types/database'
-
-interface DashboardStats {
-  totalCourses: number
-  publishedCourses: number
-  draftCourses: number
-  totalStudents: number
-}
+import { BarChart, ActivityFeed, TopCoursesCard } from '@/features/admin/components'
+import {
+  getAdminStats,
+  getRegistrationChart,
+  getEnrollmentsByCourse,
+  getTopCourses,
+  getActivityFeed,
+} from '@/actions/admin'
+import type { AdminStats, RegistrationDataPoint, CourseEnrollmentStat, PopularCourse, ActivityEvent } from '@/actions/admin'
 
 interface StatCardProps {
   title: string
-  value: number
+  value: number | string
   icon: React.ReactNode
   iconBgColor: string
   loading: boolean
@@ -45,240 +42,153 @@ function StatCard({ title, value, icon, iconBgColor, loading }: StatCardProps) {
   )
 }
 
-function getCategoryBadgeColor(category: string): string {
-  const colors: Record<string, string> = {
-    'Programación': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    'IA': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-    'Diseño': 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300',
-    'Marketing': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-    'Negocios': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-  }
-  return colors[category] || 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300'
-}
-
 export default function AdminDashboardPage() {
   const { profile, loading: userLoading } = useUser()
-  const [stats, setStats] = useState<DashboardStats>({
-    totalCourses: 0,
-    publishedCourses: 0,
-    draftCourses: 0,
-    totalStudents: 0,
-  })
-  const [recentCourses, setRecentCourses] = useState<Course[]>([])
+  const [stats, setStats] = useState<AdminStats | null>(null)
+  const [chartData, setChartData] = useState<RegistrationDataPoint[]>([])
+  const [enrollmentData, setEnrollmentData] = useState<CourseEnrollmentStat[]>([])
+  const [topCourses, setTopCourses] = useState<PopularCourse[]>([])
+  const [activity, setActivity] = useState<ActivityEvent[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function fetchDashboardData() {
-      try {
-        const supabase = createClient()
+    async function fetchAll() {
+      const [statsRes, chartRes, enrollRes, topRes, activityRes] = await Promise.all([
+        getAdminStats(),
+        getRegistrationChart(),
+        getEnrollmentsByCourse(),
+        getTopCourses(),
+        getActivityFeed(),
+      ])
 
-        // Get total courses count
-        const { count: totalCourses } = await supabase
-          .from('courses')
-          .select('*', { count: 'exact', head: true })
-
-        // Get published courses count
-        const { count: publishedCourses } = await supabase
-          .from('courses')
-          .select('*', { count: 'exact', head: true })
-          .eq('is_published', true)
-
-        // Get total students count
-        const { count: totalStudents } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true })
-          .eq('role', 'estudiante')
-
-        // Get recent courses
-        const { data: courses } = await supabase
-          .from('courses')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(5)
-
-        setStats({
-          totalCourses: totalCourses || 0,
-          publishedCourses: publishedCourses || 0,
-          draftCourses: (totalCourses || 0) - (publishedCourses || 0),
-          totalStudents: totalStudents || 0,
-        })
-        setRecentCourses(courses || [])
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error)
-      } finally {
-        setLoading(false)
-      }
+      if (statsRes.data) setStats(statsRes.data)
+      if (chartRes.data) setChartData(chartRes.data)
+      if (enrollRes.data) setEnrollmentData(enrollRes.data)
+      if (topRes.data) setTopCourses(topRes.data)
+      if (activityRes.data) setActivity(activityRes.data)
+      setLoading(false)
     }
-
-    fetchDashboardData()
+    fetchAll()
   }, [])
 
   const firstName = profile?.full_name?.split(' ')[0] || 'Admin'
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="mb-8">
+      <div>
         <h1 className="text-3xl font-bold text-foreground mb-2">
-          Panel de Administración
+          Panel de Administracion
         </h1>
         <p className="text-foreground-secondary">
           {userLoading ? 'Cargando...' : `Bienvenido, ${firstName}`}
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      {/* KPI Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard
-          title="Total Cursos"
-          value={stats.totalCourses}
-          icon={<BookOpen className="w-6 h-6 text-white" />}
+          title="Total Usuarios"
+          value={stats?.totalUsers || 0}
+          icon={<Users className="w-6 h-6 text-white" />}
           iconBgColor="bg-primary-500"
           loading={loading}
         />
         <StatCard
-          title="Publicados"
-          value={stats.publishedCourses}
+          title="Activos (7 dias)"
+          value={stats?.activeUsers7d || 0}
+          icon={<UserCheck className="w-6 h-6 text-white" />}
+          iconBgColor="bg-green-500"
+          loading={loading}
+        />
+        <StatCard
+          title="Total Cursos"
+          value={stats?.totalCourses || 0}
+          icon={<BookOpen className="w-6 h-6 text-white" />}
+          iconBgColor="bg-blue-500"
+          loading={loading}
+        />
+        <StatCard
+          title="Cursos Publicados"
+          value={stats?.publishedCourses || 0}
           icon={<Globe className="w-6 h-6 text-white" />}
-          iconBgColor="bg-success-500"
+          iconBgColor="bg-teal-500"
           loading={loading}
         />
         <StatCard
-          title="Borradores"
-          value={stats.draftCourses}
-          icon={<FileEdit className="w-6 h-6 text-white" />}
-          iconBgColor="bg-warning-500"
+          title="Total Inscripciones"
+          value={stats?.totalEnrollments || 0}
+          icon={<GraduationCap className="w-6 h-6 text-white" />}
+          iconBgColor="bg-orange-500"
           loading={loading}
         />
         <StatCard
-          title="Estudiantes"
-          value={stats.totalStudents}
-          icon={<Users className="w-6 h-6 text-white" />}
-          iconBgColor="bg-info-500"
+          title="Lecciones Completadas"
+          value={stats?.lessonsCompleted || 0}
+          icon={<CheckCircle2 className="w-6 h-6 text-white" />}
+          iconBgColor="bg-pink-500"
           loading={loading}
         />
       </div>
 
-      {/* Recent Courses Section */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-semibold text-foreground">
-            Cursos Recientes
-          </h2>
-          <Link href="/admin/courses">
-            <Button
-              variant="ghost"
-              size="sm"
-              rightIcon={<ArrowRight className="w-4 h-4" />}
-            >
-              Ver Todos
-            </Button>
-          </Link>
-        </div>
-
+      {/* Registration Chart */}
+      <Card>
+        <h3 className="text-lg font-semibold text-foreground mb-4">
+          Registros Ultimos 30 Dias
+        </h3>
         {loading ? (
-          <Card>
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-4 animate-pulse">
-                  <div className="h-4 w-32 bg-gray-200 dark:bg-slate-700 rounded" />
-                  <div className="h-4 w-20 bg-gray-200 dark:bg-slate-700 rounded" />
-                  <div className="h-4 w-24 bg-gray-200 dark:bg-slate-700 rounded ml-auto" />
-                </div>
-              ))}
-            </div>
-          </Card>
-        ) : recentCourses.length === 0 ? (
-          <Card>
-            <div className="text-center py-8">
-              <BookOpen className="w-12 h-12 text-foreground-muted mx-auto mb-3" />
-              <p className="text-foreground-secondary mb-4">
-                No hay cursos creados aún
-              </p>
-              <Link href="/admin/courses/new">
-                <Button leftIcon={<Plus className="w-4 h-4" />}>
-                  Crear Primer Curso
-                </Button>
-              </Link>
-            </div>
-          </Card>
+          <div className="h-[200px] bg-gray-100 dark:bg-slate-700/50 animate-pulse rounded-lg" />
+        ) : chartData.length > 0 ? (
+          <BarChart
+            data={chartData.map((d) => ({
+              label: new Date(d.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }),
+              value: d.count,
+            }))}
+            height={200}
+            color="bg-primary-500"
+          />
         ) : (
-          <Card>
-            <div className="divide-y divide-border">
-              {recentCourses.map((course) => (
-                <Link
-                  key={course.id}
-                  href={`/admin/courses/${course.id}/edit`}
-                  className="flex items-center gap-4 py-4 px-2 hover:bg-gray-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors group"
-                >
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-foreground truncate group-hover:text-primary-500 transition-colors">
-                      {course.title}
-                    </h3>
-                  </div>
-                  <Badge
-                    className={getCategoryBadgeColor(course.category)}
-                  >
-                    {course.category}
-                  </Badge>
-                  <Badge
-                    variant={course.is_published ? 'confirmed' : 'pending'}
-                  >
-                    {course.is_published ? 'Publicado' : 'Borrador'}
-                  </Badge>
-                  <span className="text-sm text-foreground-secondary tabular-nums">
-                    {new Date(course.created_at).toLocaleDateString('es-ES', {
-                      day: '2-digit',
-                      month: 'short',
-                    })}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </Card>
+          <p className="text-center text-foreground-muted py-8 text-sm">Sin datos de registros</p>
         )}
-      </div>
+      </Card>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card className="hover:shadow-lg transition-shadow">
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full mb-4">
-              <Plus className="w-8 h-8 text-primary-500" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              Crear Curso
-            </h3>
-            <p className="text-sm text-foreground-secondary mb-4">
-              Comienza a crear un nuevo curso desde cero
-            </p>
-            <Link href="/admin/courses/new" className="w-full">
-              <Button className="w-full">
-                Nuevo Curso
-              </Button>
-            </Link>
-          </div>
+      {/* Enrollments + Top Courses */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <h3 className="text-lg font-semibold text-foreground mb-4">
+            Inscripciones por Curso
+          </h3>
+          {loading ? (
+            <div className="h-[200px] bg-gray-100 dark:bg-slate-700/50 animate-pulse rounded-lg" />
+          ) : enrollmentData.length > 0 ? (
+            <BarChart
+              data={enrollmentData.map((d) => ({
+                label: d.courseTitle.length > 15 ? d.courseTitle.slice(0, 15) + '...' : d.courseTitle,
+                value: d.enrollmentCount,
+              }))}
+              height={200}
+              color="bg-blue-500"
+            />
+          ) : (
+            <p className="text-center text-foreground-muted py-8 text-sm">Sin inscripciones</p>
+          )}
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow">
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-info-100 dark:bg-info-900/30 rounded-full mb-4">
-              <BookOpen className="w-8 h-8 text-info-500" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              Ver Todos los Cursos
-            </h3>
-            <p className="text-sm text-foreground-secondary mb-4">
-              Gestiona todos los cursos de la plataforma
-            </p>
-            <Link href="/admin/courses" className="w-full">
-              <Button variant="outline" className="w-full">
-                Ir a Cursos
-              </Button>
-            </Link>
-          </div>
+        <Card>
+          <h3 className="text-lg font-semibold text-foreground mb-4">
+            Top 5 Cursos Populares
+          </h3>
+          <TopCoursesCard courses={topCourses} loading={loading} />
         </Card>
       </div>
+
+      {/* Activity Feed */}
+      <Card>
+        <h3 className="text-lg font-semibold text-foreground mb-4">
+          Actividad Reciente
+        </h3>
+        <ActivityFeed events={activity} loading={loading} />
+      </Card>
     </div>
   )
 }

@@ -1,0 +1,352 @@
+/* ============================================
+   RICH LESSON CONTENT STYLES
+   Soporta: texto rico, imagenes, videos,
+   bloques de practica, CTAs
+   ============================================ */
+
+/* ---- Base Typography ---- */
+
+.lesson-rich-content {
+  @apply text-[#0F172A] dark:text-slate-200 leading-[1.7] text-base;
+  max-width: 75ch;
+}
+
+.lesson-rich-content > *:first-child {
+  margin-top: 0;
+}
+
+/* ---- Headings ---- */
+
+.lesson-rich-content h2 {
+  @apply font-heading font-bold text-xl lg:text-2xl text-[#0F172A] dark:text-slate-100;
+  @apply mt-10 mb-4 pb-2 border-b border-slate-200 dark:border-slate-700;
+}
+
+.lesson-rich-content h3 {
+  @apply font-heading font-semibold text-lg lg:text-xl text-[#0F172A] dark:text-slate-100;
+  @apply mt-8 mb-3;
+}
+
+.lesson-rich-content h4 {
+  @apply font-heading font-semibold text-base lg:text-lg text-[#0F172A] dark:text-slate-200;
+  @apply mt-6 mb-2;
+}
+
+/* ---- Paragraphs ---- */
+
+.lesson-rich-content p {
+  @apply mb-5 text-[#334155] dark:text-slate-300;
+}
+
+/* ---- Links ---- */
+
+.lesson-rich-content a {
+  @apply text-primary-600 dark:text-primary-400 underline decoration-primary-300 dark:decoration-primary-700;
+  @apply underline-offset-2 transition-colors;
+}
+
+.lesson-rich-content a:hover {
+  @apply text-primary-700 dark:text-primary-300 decoration-primary-500;
+}
+
+/* ---- Bold & Italic ---- */
+
+.lesson-rich-content strong {
+  @apply font-semibold text-[#0F172A] dark:text-slate-100;
+}
+
+.lesson-rich-content em {
+  @apply italic text-[#475569] dark:text-slate-400;
+}
+
+/* ---- Lists ---- */
+
+.lesson-rich-content ul {
+  @apply my-5 pl-6 space-y-2;
+  list-style-type: disc;
+}
+
+.lesson-rich-content ol {
+  @apply my-5 pl-6 space-y-2;
+  list-style-type: decimal;
+}
+
+.lesson-rich-content li {
+  @apply text-[#334155] dark:text-slate-300 leading-relaxed;
+}
+
+.lesson-rich-content li::marker {
+  @apply text-primary-500 dark:text-primary-400;
+}
+
+.lesson-rich-content ul ul,
+.lesson-rich-content ol ol,
+.lesson-rich-content ul ol,
+.lesson-rich-content ol ul {
+  @apply mt-2 mb-0;
+}
+
+/* ---- Blockquote ---- */
+
+.lesson-rich-content blockquote {
+  @apply my-6 pl-4 border-l-4 border-primary-400 dark:border-primary-600;
+  @apply bg-primary-50/50 dark:bg-primary-950/20 py-3 pr-4 rounded-r-lg;
+  @apply text-[#475569] dark:text-slate-300 italic;
+}
+
+.lesson-rich-content blockquote p {
+  @apply mb-0;
+}
+
+/* ---- Code ---- */
+
+.lesson-rich-content code {
+  @apply text-sm bg-slate-100 dark:bg-slate-800 text-primary-600 dark:text-primary-400;
+  @apply px-1.5 py-0.5 rounded font-mono;
+}
+
+.lesson-rich-content pre {
+  @apply my-6 p-4 bg-slate-900 dark:bg-slate-950 text-slate-100 rounded-xl overflow-x-auto;
+  @apply text-sm leading-relaxed border border-slate-700/50;
+}
+
+.lesson-rich-content pre code {
+  @apply bg-transparent text-inherit px-0 py-0 text-sm;
+}
+
+/* ---- Horizontal Rule ---- */
+
+.lesson-rich-content hr {
+  @apply my-8 border-slate-200 dark:border-slate-700;
+}
+
+/* ---- Tables ---- */
+
+.lesson-rich-content table {
+  @apply w-full my-6 border-collapse text-sm;
+}
+
+.lesson-rich-content th {
+  @apply bg-slate-100 dark:bg-slate-800 text-left px-4 py-2.5 font-semibold;
+  @apply text-[#0F172A] dark:text-slate-100 border border-slate-200 dark:border-slate-700;
+}
+
+.lesson-rich-content td {
+  @apply px-4 py-2.5 border border-slate-200 dark:border-slate-700;
+  @apply text-[#334155] dark:text-slate-300;
+}
+
+.lesson-rich-content tr:nth-child(even) td {
+  @apply bg-slate-50 dark:bg-slate-900/50;
+}
+
+/* ============================================
+   IMAGES - Responsive & Styled
+   ============================================ */
+
+.lesson-rich-content img {
+  @apply max-w-full h-auto mx-auto block my-6 rounded-lg;
+  @apply shadow-sm border border-slate-200 dark:border-slate-700;
+}
+
+.lesson-rich-content figure {
+  @apply my-8 mx-0;
+}
+
+.lesson-rich-content figure img {
+  @apply my-0 mb-3;
+}
+
+.lesson-rich-content figcaption {
+  @apply text-center text-sm text-slate-500 dark:text-slate-400 italic mt-2;
+}
+
+/* ============================================
+   VIDEO EMBED - Responsive 16:9
+   ============================================ */
+
+.lesson-rich-content .video-embed {
+  @apply relative w-full my-8 rounded-xl overflow-hidden bg-black;
+  @apply shadow-lg;
+  padding-top: 56.25%; /* 16:9 aspect ratio */
+}
+
+.lesson-rich-content .video-embed iframe {
+  @apply absolute top-0 left-0 w-full h-full border-0;
+}
+
+/* ============================================
+   PRACTICA BLOCK - Green Practice Box
+   ============================================ */
+
+.lesson-rich-content .practica-block {
+  @apply my-8 p-5 lg:p-6 rounded-xl;
+  background-color: #F0FDF4;
+  border-left: 4px solid #059669;
+}
+
+@media (prefers-color-scheme: dark) {
+  .lesson-rich-content .practica-block {
+    background-color: rgba(5, 150, 105, 0.08);
+    border-left-color: #34D399;
+  }
+}
+
+:is(.dark) .lesson-rich-content .practica-block {
+  background-color: rgba(5, 150, 105, 0.08);
+  border-left-color: #34D399;
+}
+
+.lesson-rich-content .practica-block::before {
+  content: "\1F4DD  Practica";
+  @apply block font-heading font-bold text-base mb-3;
+  color: #059669;
+}
+
+:is(.dark) .lesson-rich-content .practica-block::before {
+  color: #34D399;
+}
+
+.lesson-rich-content .practica-block > *:first-child {
+  @apply mt-0;
+}
+
+.lesson-rich-content .practica-block > *:last-child {
+  @apply mb-0;
+}
+
+.lesson-rich-content .practica-block p {
+  @apply text-emerald-900 dark:text-emerald-100;
+}
+
+.lesson-rich-content .practica-block ul,
+.lesson-rich-content .practica-block ol {
+  @apply my-3;
+}
+
+.lesson-rich-content .practica-block li {
+  @apply text-emerald-800 dark:text-emerald-200;
+}
+
+.lesson-rich-content .practica-block li::marker {
+  color: #059669;
+}
+
+:is(.dark) .lesson-rich-content .practica-block li::marker {
+  color: #34D399;
+}
+
+/* ============================================
+   CTA SINSAJO - Purple Promo Block
+   ============================================ */
+
+.lesson-rich-content .cta-sinsajo {
+  @apply my-8 p-5 lg:p-6 rounded-xl;
+  background-color: #F3F0FF;
+  border-left: 4px solid #7C3AED;
+}
+
+:is(.dark) .lesson-rich-content .cta-sinsajo {
+  background-color: rgba(124, 58, 237, 0.08);
+  border-left-color: #A78BFA;
+}
+
+.lesson-rich-content .cta-sinsajo::before {
+  content: "\1F680  Siguiente Paso";
+  @apply block font-heading font-bold text-base mb-3;
+  color: #7C3AED;
+}
+
+:is(.dark) .lesson-rich-content .cta-sinsajo::before {
+  color: #A78BFA;
+}
+
+.lesson-rich-content .cta-sinsajo > *:first-child {
+  @apply mt-0;
+}
+
+.lesson-rich-content .cta-sinsajo > *:last-child {
+  @apply mb-0;
+}
+
+.lesson-rich-content .cta-sinsajo p {
+  @apply text-violet-900 dark:text-violet-100;
+}
+
+.lesson-rich-content .cta-sinsajo a {
+  @apply text-violet-700 dark:text-violet-300 font-medium;
+  @apply decoration-violet-400 dark:decoration-violet-600;
+}
+
+.lesson-rich-content .cta-sinsajo a:hover {
+  @apply text-violet-900 dark:text-violet-100;
+}
+
+/* ============================================
+   INFO/NOTE BLOCK (bonus utility)
+   ============================================ */
+
+.lesson-rich-content .info-block {
+  @apply my-8 p-5 lg:p-6 rounded-xl;
+  background-color: #EFF6FF;
+  border-left: 4px solid #2563EB;
+}
+
+:is(.dark) .lesson-rich-content .info-block {
+  background-color: rgba(37, 99, 235, 0.08);
+  border-left-color: #60A5FA;
+}
+
+.lesson-rich-content .info-block::before {
+  content: "\1F4A1  Nota";
+  @apply block font-heading font-bold text-base mb-3;
+  color: #2563EB;
+}
+
+:is(.dark) .lesson-rich-content .info-block::before {
+  color: #60A5FA;
+}
+
+.lesson-rich-content .info-block > *:first-child {
+  @apply mt-0;
+}
+
+.lesson-rich-content .info-block > *:last-child {
+  @apply mb-0;
+}
+
+.lesson-rich-content .info-block p {
+  @apply text-blue-900 dark:text-blue-100;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 640px) {
+  .lesson-rich-content {
+    @apply text-[15px];
+  }
+
+  .lesson-rich-content h2 {
+    @apply text-lg mt-8;
+  }
+
+  .lesson-rich-content h3 {
+    @apply text-base mt-6;
+  }
+
+  .lesson-rich-content .practica-block,
+  .lesson-rich-content .cta-sinsajo,
+  .lesson-rich-content .info-block {
+    @apply p-4 -mx-1;
+  }
+
+  .lesson-rich-content .video-embed {
+    @apply -mx-4 rounded-none;
+  }
+
+  .lesson-rich-content pre {
+    @apply -mx-2 rounded-lg text-xs;
+  }
+}

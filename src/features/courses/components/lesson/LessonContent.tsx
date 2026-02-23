@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, CheckCircle, Loader2 } from 'lucide-react'
 import { VideoPlayer } from './VideoPlayer'
+import { RichLessonContent } from './RichLessonContent'
 import type { Lesson } from '@/types/database'
 
 interface LessonContentProps {
@@ -49,19 +50,9 @@ export function LessonContent({
 
       {/* Lesson content */}
       {lesson.content && (
-        <div
-          className="prose prose-slate dark:prose-invert max-w-none mb-8
-            prose-headings:font-heading prose-headings:font-semibold
-            prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg
-            prose-p:text-foreground dark:prose-p:text-slate-300
-            prose-a:text-primary-600 dark:prose-a:text-primary-400
-            prose-strong:text-foreground dark:prose-strong:text-slate-100
-            prose-code:text-primary-600 dark:prose-code:text-primary-400
-            prose-pre:bg-slate-900 prose-pre:text-slate-100
-            prose-ul:text-foreground dark:prose-ul:text-slate-300
-            prose-ol:text-foreground dark:prose-ol:text-slate-300"
-          dangerouslySetInnerHTML={{ __html: lesson.content }}
-        />
+        <div className="mb-8">
+          <RichLessonContent html={lesson.content} />
+        </div>
       )}
 
       {/* Complete lesson button */}

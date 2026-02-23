@@ -4,14 +4,15 @@ import { useState } from 'react'
 import { Modal } from '@/components/ui/modal'
 import { Input } from '@/components/ui'
 import { Button } from '@/components/ui'
-import { Textarea } from '@/components/ui/textarea'
 import { createLesson, updateLesson } from '@/actions/lessons'
 import type { Lesson } from '@/types/database'
+import { FileEdit } from 'lucide-react'
 
 interface LessonFormModalProps {
   isOpen: boolean
   onClose: () => void
   moduleId: string
+  courseId: string
   lesson?: Lesson
   onSuccess: () => void
 }
@@ -20,11 +21,11 @@ export function LessonFormModal({
   isOpen,
   onClose,
   moduleId,
+  courseId,
   lesson,
   onSuccess,
 }: LessonFormModalProps) {
   const [title, setTitle] = useState(lesson?.title || '')
-  const [content, setContent] = useState(lesson?.content || '')
   const [videoUrl, setVideoUrl] = useState(lesson?.video_url || '')
   const [duration, setDuration] = useState(lesson?.duration_minutes?.toString() || '')
   const [error, setError] = useState<string | null>(null)
@@ -40,7 +41,7 @@ export function LessonFormModal({
     try {
       const formData = new FormData()
       formData.append('title', title)
-      formData.append('content', content)
+      formData.append('content', lesson?.content || '')
       formData.append('video_url', videoUrl)
       formData.append('duration_minutes', duration || '0')
       formData.append('module_id', moduleId)
@@ -64,15 +65,14 @@ export function LessonFormModal({
       onSuccess()
       onClose()
       resetForm()
-    } catch (err) {
-      setError('Error inesperado al guardar la lección')
+    } catch {
+      setError('Error inesperado al guardar la leccion')
       setIsSubmitting(false)
     }
   }
 
   const resetForm = () => {
     setTitle('')
-    setContent('')
     setVideoUrl('')
     setDuration('')
     setError(null)
@@ -84,7 +84,6 @@ export function LessonFormModal({
         resetForm()
       } else {
         setTitle(lesson?.title || '')
-        setContent(lesson?.content || '')
         setVideoUrl(lesson?.video_url || '')
         setDuration(lesson?.duration_minutes?.toString() || '')
         setError(null)
@@ -97,8 +96,8 @@ export function LessonFormModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={isEditMode ? 'Editar Lección' : 'Agregar Lección'}
-      size="lg"
+      title={isEditMode ? 'Editar Leccion' : 'Agregar Leccion'}
+      size="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
@@ -112,33 +111,15 @@ export function LessonFormModal({
             htmlFor="title"
             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
-            Título <span className="text-red-500">*</span>
+            Titulo <span className="text-red-500">*</span>
           </label>
           <Input
             id="title"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Ej: Introducción a Componentes"
+            placeholder="Ej: Introduccion a Componentes"
             required
-            disabled={isSubmitting}
-            className="w-full"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="content"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-          >
-            Contenido
-          </label>
-          <Textarea
-            id="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Descripción y contenido de la lección..."
-            rows={8}
             disabled={isSubmitting}
             className="w-full"
           />
@@ -167,7 +148,7 @@ export function LessonFormModal({
             htmlFor="duration"
             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
-            Duración en minutos
+            Duracion en minutos
           </label>
           <Input
             id="duration"
@@ -180,6 +161,23 @@ export function LessonFormModal({
             className="w-full"
           />
         </div>
+
+        {isEditMode && (
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+            <div className="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-300">
+              <FileEdit className="w-4 h-4 shrink-0" />
+              <span>
+                Para editar el contenido rico, usa el boton{' '}
+                <a
+                  href={`/admin/courses/${courseId}/lessons/${lesson?.id}/edit`}
+                  className="font-medium underline"
+                >
+                  Editor de Contenido
+                </a>
+              </span>
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-3 justify-end pt-4">
           <Button
@@ -195,7 +193,7 @@ export function LessonFormModal({
               ? 'Guardando...'
               : isEditMode
                 ? 'Actualizar'
-                : 'Crear Lección'}
+                : 'Crear Leccion'}
           </Button>
         </div>
       </form>

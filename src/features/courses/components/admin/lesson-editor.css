@@ -1,0 +1,159 @@
+/* ============================================
+   LESSON EDITOR - TipTap Styles
+   ============================================ */
+
+/* ---- Editor Content Area ---- */
+
+.lesson-editor-content {
+  @apply text-gray-900 dark:text-gray-100 leading-[1.7] text-base;
+}
+
+.lesson-editor-content > *:first-child {
+  margin-top: 0;
+}
+
+/* ---- Placeholder ---- */
+
+.lesson-editor-content p.is-editor-empty:first-child::before {
+  @apply text-gray-400 dark:text-gray-500;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* ---- Headings ---- */
+
+.lesson-editor-content h2 {
+  @apply font-bold text-xl lg:text-2xl text-gray-900 dark:text-gray-100;
+  @apply mt-8 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700;
+}
+
+.lesson-editor-content h3 {
+  @apply font-semibold text-lg lg:text-xl text-gray-900 dark:text-gray-100;
+  @apply mt-6 mb-3;
+}
+
+/* ---- Paragraphs ---- */
+
+.lesson-editor-content p {
+  @apply mb-4 text-gray-700 dark:text-gray-300;
+}
+
+/* ---- Bold & Italic ---- */
+
+.lesson-editor-content strong {
+  @apply font-semibold text-gray-900 dark:text-gray-100;
+}
+
+.lesson-editor-content em {
+  @apply italic;
+}
+
+/* ---- Lists ---- */
+
+.lesson-editor-content ul {
+  @apply my-4 pl-6 space-y-1;
+  list-style-type: disc;
+}
+
+.lesson-editor-content ol {
+  @apply my-4 pl-6 space-y-1;
+  list-style-type: decimal;
+}
+
+.lesson-editor-content li {
+  @apply text-gray-700 dark:text-gray-300 leading-relaxed;
+}
+
+.lesson-editor-content li p {
+  @apply mb-0;
+}
+
+/* ---- Images ---- */
+
+.lesson-editor-content img {
+  @apply max-w-full h-auto mx-auto block my-6 rounded-lg;
+  @apply shadow-sm border border-gray-200 dark:border-gray-700;
+  @apply cursor-pointer;
+}
+
+.lesson-editor-content img.ProseMirror-selectednode {
+  @apply ring-2 ring-blue-500 ring-offset-2;
+}
+
+/* ---- Video Embed ---- */
+
+.lesson-editor-content .video-embed {
+  @apply relative w-full my-6 rounded-xl overflow-hidden bg-black;
+  padding-top: 56.25%;
+}
+
+.lesson-editor-content .video-embed iframe {
+  @apply absolute top-0 left-0 w-full h-full border-0;
+}
+
+/* ---- Practice Block ---- */
+
+.lesson-editor-content .practica-block {
+  @apply my-6 p-5 rounded-xl;
+  background-color: #F0FDF4;
+  border-left: 4px solid #059669;
+}
+
+:is(.dark) .lesson-editor-content .practica-block {
+  background-color: rgba(5, 150, 105, 0.08);
+  border-left-color: #34D399;
+}
+
+.lesson-editor-content .practica-block::before {
+  content: "\1F4DD  Practica";
+  @apply block font-bold text-base mb-3;
+  color: #059669;
+}
+
+:is(.dark) .lesson-editor-content .practica-block::before {
+  color: #34D399;
+}
+
+/* ---- CTA Sinsajo ---- */
+
+.lesson-editor-content .cta-sinsajo {
+  @apply my-6 p-5 rounded-xl;
+  background-color: #F3F0FF;
+  border-left: 4px solid #7C3AED;
+}
+
+:is(.dark) .lesson-editor-content .cta-sinsajo {
+  background-color: rgba(124, 58, 237, 0.08);
+  border-left-color: #A78BFA;
+}
+
+.lesson-editor-content .cta-sinsajo::before {
+  content: "\1F680  Siguiente Paso";
+  @apply block font-bold text-base mb-3;
+  color: #7C3AED;
+}
+
+:is(.dark) .lesson-editor-content .cta-sinsajo::before {
+  color: #A78BFA;
+}
+
+/* ---- Focus Ring ---- */
+
+.ProseMirror:focus {
+  outline: none;
+}
+
+/* ---- Blockquote ---- */
+
+.lesson-editor-content blockquote {
+  @apply my-6 pl-4 border-l-4 border-blue-400 dark:border-blue-600;
+  @apply bg-blue-50/50 dark:bg-blue-950/20 py-3 pr-4 rounded-r-lg;
+}
+
+/* ---- Horizontal Rule ---- */
+
+.lesson-editor-content hr {
+  @apply my-8 border-gray-200 dark:border-gray-700;
+}

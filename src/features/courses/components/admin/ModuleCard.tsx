@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Badge } from '@/components/ui'
@@ -15,6 +16,7 @@ import {
   Plus,
   Video,
   Clock,
+  FileEdit,
 } from 'lucide-react'
 
 interface ModuleCardProps {
@@ -40,6 +42,7 @@ export function ModuleCard({
   onDelete,
   onRefresh,
 }: ModuleCardProps) {
+  const router = useRouter()
   const [isExpanded, setIsExpanded] = useState(false)
   const [showLessonModal, setShowLessonModal] = useState(false)
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
@@ -232,8 +235,19 @@ export function ModuleCard({
                       <Button
                         variant="ghost"
                         size="sm"
+                        onClick={() => router.push(`/admin/courses/${courseId}/lessons/${lesson.id}/edit`)}
+                        className="hover:bg-blue-100 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                        title="Editar contenido"
+                      >
+                        <FileEdit className="w-4 h-4" />
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => handleEditLesson(lesson)}
                         className="hover:bg-gray-200 dark:hover:bg-gray-600"
+                        title="Editar datos"
                       >
                         <Pencil className="w-4 h-4" />
                       </Button>
@@ -291,6 +305,7 @@ export function ModuleCard({
           setEditingLesson(null)
         }}
         moduleId={module.id}
+        courseId={courseId}
         lesson={editingLesson || undefined}
         onSuccess={handleLessonSuccess}
       />

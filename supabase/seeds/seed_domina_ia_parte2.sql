@@ -143,7 +143,7 @@ BEGIN
   <li><strong>Memes profesionales:</strong> Genera memes con texto perfecto. Describe la escena y el texto, y obtienes un meme listo para publicar.</li>
   <li><strong>Infografias:</strong> Crea infografias con datos, titulos, y leyendas legibles. "Genera una infografia sobre las 5 tendencias de IA en 2026 con estilo corporativo azul".</li>
   <li><strong>Portadas de libros:</strong> Genera portadas completas con titulo, subtitulo, y nombre del autor. Itera el diseno con instrucciones de texto.</li>
-  <li><strong>Thumbnails para YouTube:</strong> Crea thumbnails llamativos con texto grande y legible. "Foto mia sorprendido con texto '10 TRUCOS DE IA' en rojo grande".</li>
+  <li><strong>Thumbnails para YouTube:</strong> Crea thumbnails llamativos con texto grande y legible. "Foto mia sorprendido con texto ''10 TRUCOS DE IA'' en rojo grande".</li>
   <li><strong>Posts para redes sociales:</strong> Genera imagenes con frases, citas, o datos estadisticos listos para publicar en Instagram, LinkedIn, o X.</li>
 </ul>
 

@@ -38,6 +38,18 @@ export function LessonContent({
         </div>
       )}
 
+      {/* Cover image (only when no video) */}
+      {lesson.cover_image_url && !lesson.video_url && (
+        <div className="mb-8 rounded-2xl overflow-hidden">
+          <img
+            src={lesson.cover_image_url}
+            alt={lesson.title}
+            className="w-full h-auto object-cover max-h-[400px]"
+            loading="lazy"
+          />
+        </div>
+      )}
+
       {/* Lesson title and info */}
       <div className="mb-6">
         <h1 className="font-heading font-bold text-[#0F172A] dark:text-slate-100 text-2xl lg:text-3xl mb-2">

@@ -137,6 +137,15 @@ export function MobileCourseSidebar({
                               <Play className="w-5 h-5 text-foreground-muted dark:text-slate-500 mt-0.5 flex-shrink-0" />
                             )}
 
+                            {lesson.cover_image_url && (
+                              <img
+                                src={lesson.cover_image_url}
+                                alt=""
+                                className="w-8 h-8 rounded object-cover flex-shrink-0 mt-0.5"
+                                loading="lazy"
+                              />
+                            )}
+
                             <div className="flex-1 min-w-0">
                               <p
                                 className={`text-sm font-medium ${

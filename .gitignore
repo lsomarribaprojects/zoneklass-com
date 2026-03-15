@@ -33,6 +33,11 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# claude/mcp (contains access tokens)
+.mcp.json
+.claude/settings.local.json
+.playwright-mcp/
+
 # vercel
 .vercel
 

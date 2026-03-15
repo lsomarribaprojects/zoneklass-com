@@ -2,10 +2,11 @@ import { Resend } from 'resend'
 
 let resend: Resend | null = null
 
-function getResend(): Resend {
+function getResend(): Resend | null {
   if (!resend) {
     if (!process.env.RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY is not configured')
+      console.warn('[Email] RESEND_API_KEY is not configured. Emails will be logged but not sent.')
+      return null
     }
     resend = new Resend(process.env.RESEND_API_KEY)
   }
@@ -22,7 +23,18 @@ interface SendEmailOptions {
 
 export async function sendEmail({ to, subject, react }: SendEmailOptions): Promise<{ error: string | null }> {
   try {
-    const { error } = await getResend().emails.send({
+    const client = getResend()
+    
+    if (!client) {
+      console.info(`[Email Preview]
+To: ${to}
+Subject: ${subject}
+Content: [React Component Rendered]
+-------------------------`)
+      return { error: null }
+    }
+
+    const { error } = await client.emails.send({
       from: FROM_EMAIL,
       to,
       subject,

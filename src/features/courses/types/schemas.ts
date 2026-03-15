@@ -28,6 +28,7 @@ export const lessonSchema = z.object({
   title: z.string().min(2, 'El titulo debe tener al menos 2 caracteres').max(200),
   content: z.string().max(50000).optional().default(''),
   video_url: z.string().url('URL invalida').optional().or(z.literal('')),
+  cover_image_url: z.string().url('URL invalida').optional().or(z.literal('')),
   duration_minutes: z.coerce.number().int().min(0).default(0),
   module_id: z.string().uuid(),
 })

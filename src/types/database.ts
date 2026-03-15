@@ -53,6 +53,7 @@ export interface Lesson {
   title: string
   content: string | null
   video_url: string | null
+  cover_image_url: string | null
   order_index: number
   duration_minutes: number
   created_at: string

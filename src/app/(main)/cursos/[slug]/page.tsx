@@ -292,6 +292,14 @@ export default function CourseDetailPage() {
                           ) : (
                             <PlayCircle className="w-5 h-5 text-primary-500 flex-shrink-0" />
                           )}
+                          {lesson.cover_image_url && (
+                            <img
+                              src={lesson.cover_image_url}
+                              alt=""
+                              className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                              loading="lazy"
+                            />
+                          )}
                           <span className="flex-1 text-sm text-foreground dark:text-slate-200">
                             {lesson.title}
                           </span>
@@ -305,6 +313,14 @@ export default function CourseDetailPage() {
                           className="flex items-center gap-3 px-4 sm:px-5 py-3 border-b last:border-b-0 border-border-light dark:border-slate-700"
                         >
                           <Lock className="w-4 h-4 text-foreground-muted dark:text-slate-500 flex-shrink-0" />
+                          {lesson.cover_image_url && (
+                            <img
+                              src={lesson.cover_image_url}
+                              alt=""
+                              className="w-10 h-10 rounded-lg object-cover flex-shrink-0 opacity-60"
+                              loading="lazy"
+                            />
+                          )}
                           <span className="flex-1 text-sm text-foreground-secondary dark:text-slate-400">
                             {lesson.title}
                           </span>

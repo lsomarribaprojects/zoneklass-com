@@ -120,6 +120,25 @@ export async function updatePassword(formData: FormData) {
   redirect('/dashboard')
 }
 
+export async function loginWithGoogle() {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+    },
+  })
+
+  if (error) {
+    redirect('/login?error=oauth_error')
+  }
+
+  if (data.url) {
+    redirect(data.url)
+  }
+}
+
 export async function updateProfile(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

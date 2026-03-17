@@ -93,6 +93,14 @@ export function RichLessonContent({ html }: RichLessonContentProps) {
       img.decoding = 'async'
     })
 
+    // Hide video-embed divs with no valid video (PENDIENTE placeholders)
+    const allVideoEmbeds = contentRef.current.querySelectorAll<HTMLElement>('.video-embed')
+    allVideoEmbeds.forEach((container) => {
+      if (!container.querySelector('iframe')) {
+        container.style.display = 'none'
+      }
+    })
+
     // Make external links open in new tab
     const links = contentRef.current.querySelectorAll<HTMLAnchorElement>(
       'a[href^="http"]'

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { BookOpen, Clock, Users, CheckCircle } from 'lucide-react'
 import type { CourseWithStats, CourseCategory, CourseLevel } from '@/types/database'
+import { useLocale } from '@/features/i18n'
 
 const CATEGORY_GRADIENTS: Record<CourseCategory, string> = {
   'Programación': 'from-violet-500 to-purple-600',
@@ -31,6 +32,7 @@ function formatDuration(minutes: number): string {
 }
 
 export function CourseCard({ course, isEnrolled = false }: CourseCardProps) {
+  const { t } = useLocale()
   const gradient = CATEGORY_GRADIENTS[course.category] || 'from-violet-500 to-purple-600'
   const levelStyle = LEVEL_STYLES[course.level] || 'bg-gray-100 text-gray-700'
 
@@ -55,21 +57,21 @@ export function CourseCard({ course, isEnrolled = false }: CourseCardProps) {
 
         {/* Level Badge */}
         <span className={`absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-semibold ${levelStyle}`}>
-          {course.level}
+          {t.levels[course.level]}
         </span>
 
         {/* Enrolled Badge */}
         {isEnrolled && (
           <span className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
             <CheckCircle className="w-3.5 h-3.5" />
-            Inscrito
+            {t.course.enrolled}
           </span>
         )}
 
         {/* Price Badge */}
         {course.price === 0 && (
           <span className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full text-xs font-bold bg-white/90 text-primary-600 backdrop-blur-sm">
-            Gratis
+            {t.course.free}
           </span>
         )}
       </div>
@@ -78,7 +80,7 @@ export function CourseCard({ course, isEnrolled = false }: CourseCardProps) {
       <div className="p-5 flex flex-col flex-1">
         {/* Category */}
         <span className="text-xs font-semibold text-primary-500 uppercase tracking-wider mb-1.5">
-          {course.category}
+          {t.categories[course.category]}
         </span>
 
         {/* Title */}
@@ -97,7 +99,7 @@ export function CourseCard({ course, isEnrolled = false }: CourseCardProps) {
         <div className="flex items-center gap-4 text-xs text-foreground-muted dark:text-slate-500 mt-auto pt-3 border-t border-border-light dark:border-slate-700">
           <span className="flex items-center gap-1">
             <BookOpen className="w-3.5 h-3.5" />
-            {course.lessons_count} lecciones
+            {course.lessons_count} {t.course.lessons}
           </span>
           <span className="flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" />
@@ -106,7 +108,7 @@ export function CourseCard({ course, isEnrolled = false }: CourseCardProps) {
           {course.modules_count > 0 && (
             <span className="flex items-center gap-1">
               <Users className="w-3.5 h-3.5" />
-              {course.modules_count} modulos
+              {course.modules_count} {t.course.modules}
             </span>
           )}
         </div>

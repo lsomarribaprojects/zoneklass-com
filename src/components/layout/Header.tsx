@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -21,21 +21,24 @@ import { useTheme } from './ThemeProvider'
 import { useUser } from '@/hooks/useUser'
 import { signout } from '@/actions/auth'
 import { NotificationDropdown } from '@/features/community/components/NotificationDropdown'
-
-const NAV_ITEMS = [
-  { label: 'Inicio', href: '/dashboard', icon: Home },
-  { label: 'Cursos', href: '/cursos', icon: BookOpen },
-  { label: 'Comunidad', href: '/comunidad', icon: Users },
-  { label: 'Leaderboard', href: '/leaderboard', icon: Trophy },
-]
+import { useLocale } from '@/features/i18n'
+import { LanguageSelector } from '@/features/i18n/components/LanguageSelector'
 
 export function Header() {
   const pathname = usePathname()
   const { theme, toggleTheme } = useTheme()
   const { profile } = useUser()
+  const { t } = useLocale()
   const [showDropdown, setShowDropdown] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const NAV_ITEMS = useMemo(() => [
+    { label: t.nav.home, href: '/dashboard', icon: Home },
+    { label: t.nav.courses, href: '/cursos', icon: BookOpen },
+    { label: t.nav.community, href: '/comunidad', icon: Users },
+    { label: t.nav.leaderboard, href: '/leaderboard', icon: Trophy },
+  ], [t])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -64,7 +67,7 @@ export function Header() {
           <button
             onClick={() => setShowMobileMenu(!showMobileMenu)}
             className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-            aria-label="Menú"
+            aria-label={t.nav.menu}
           >
             {showMobileMenu ? (
               <X className="w-5 h-5 text-foreground dark:text-slate-200" />
@@ -101,12 +104,14 @@ export function Header() {
           })}
         </nav>
 
-        {/* Right: Theme toggle + Notifications + Avatar */}
+        {/* Right: Language + Theme toggle + Notifications + Avatar */}
         <div className="flex items-center gap-2">
+          <LanguageSelector />
+
           <button
             onClick={toggleTheme}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-            aria-label="Cambiar tema"
+            aria-label={t.nav.changeTheme}
           >
             {theme === 'dark' ? (
               <Sun className="w-5 h-5 text-yellow-400" />
@@ -140,7 +145,7 @@ export function Header() {
               <div className="absolute right-0 top-12 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-elevated border border-border-light dark:border-slate-700 py-2 animate-scale-in z-50">
                 <div className="px-4 py-3 border-b border-border-light dark:border-slate-700">
                   <p className="text-sm font-medium text-foreground dark:text-slate-100 truncate">
-                    {profile?.full_name || 'Usuario'}
+                    {profile?.full_name || t.nav.user}
                   </p>
                   <p className="text-xs text-foreground-muted dark:text-slate-500 truncate">
                     {profile?.email}
@@ -153,7 +158,7 @@ export function Header() {
                   className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground-secondary dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                 >
                   <User className="w-4 h-4" />
-                  Mi Perfil
+                  {t.nav.profile}
                 </Link>
                 <Link
                   href="/settings"
@@ -161,7 +166,7 @@ export function Header() {
                   className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground-secondary dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                 >
                   <Settings className="w-4 h-4" />
-                  Configuracion
+                  {t.nav.settings}
                 </Link>
 
                 {(profile?.role === 'super_admin' || profile?.role === 'admin') && (
@@ -171,7 +176,7 @@ export function Header() {
                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors"
                   >
                     <Shield className="w-4 h-4" />
-                    Panel Admin
+                    {t.nav.adminPanel}
                   </Link>
                 )}
 
@@ -181,7 +186,7 @@ export function Header() {
                     className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-error-500 hover:bg-error-50 dark:hover:bg-error-500/10 transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
-                    Cerrar Sesión
+                    {t.nav.logout}
                   </button>
                 </div>
               </div>

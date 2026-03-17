@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Trophy, ArrowRight, Home } from 'lucide-react'
+import { useLocale } from '@/features/i18n'
 
 interface CompletionCelebrationProps {
   courseTitle: string
@@ -12,6 +13,8 @@ export function CompletionCelebration({
   courseTitle,
   courseSlug,
 }: CompletionCelebrationProps) {
+  const { t } = useLocale()
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
       {/* Confetti animation */}
@@ -47,12 +50,12 @@ export function CompletionCelebration({
 
         {/* Heading */}
         <h2 className="font-heading font-bold text-[#0F172A] dark:text-slate-100 text-3xl mb-3">
-          ¡Felicidades!
+          {t.completion.congratulations}
         </h2>
 
         {/* Message */}
         <p className="text-foreground-secondary dark:text-slate-400 text-lg mb-8">
-          Has completado el curso{' '}
+          {t.completion.courseCompleted}{' '}
           <span className="font-semibold text-foreground dark:text-slate-100">
             {courseTitle}
           </span>
@@ -64,7 +67,7 @@ export function CompletionCelebration({
             href={`/cursos/${courseSlug}`}
             className="flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 dark:bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors"
           >
-            <span>Volver al Curso</span>
+            <span>{t.completion.backToCourse}</span>
             <ArrowRight className="w-5 h-5" />
           </Link>
           <Link
@@ -72,7 +75,7 @@ export function CompletionCelebration({
             className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 dark:bg-slate-800 text-foreground dark:text-slate-100 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
           >
             <Home className="w-5 h-5" />
-            <span>Ir al Dashboard</span>
+            <span>{t.completion.goToDashboard}</span>
           </Link>
         </div>
       </div>

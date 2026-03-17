@@ -4,8 +4,10 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useCallback, useState, useEffect } from 'react'
 import { Search, X } from 'lucide-react'
 import { COURSE_CATEGORIES, COURSE_LEVELS } from '@/features/courses/types/schemas'
+import { useLocale } from '@/features/i18n'
 
 export function CatalogFilters() {
+  const { t } = useLocale()
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -58,7 +60,7 @@ export function CatalogFilters() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted dark:text-slate-500" />
         <input
           type="text"
-          placeholder="Buscar cursos..."
+          placeholder={t.catalog.searchPlaceholder}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border-light dark:border-slate-700 bg-white dark:bg-slate-800 text-foreground dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all placeholder:text-foreground-muted dark:placeholder:text-slate-500"
@@ -71,9 +73,9 @@ export function CatalogFilters() {
         onChange={(e) => updateFilters('category', e.target.value)}
         className="px-4 py-2.5 rounded-xl border border-border-light dark:border-slate-700 bg-white dark:bg-slate-800 text-foreground dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
       >
-        <option value="">Todas las categorias</option>
+        <option value="">{t.catalog.allCategories}</option>
         {COURSE_CATEGORIES.map(cat => (
-          <option key={cat} value={cat}>{cat}</option>
+          <option key={cat} value={cat}>{t.categories[cat]}</option>
         ))}
       </select>
 
@@ -83,9 +85,9 @@ export function CatalogFilters() {
         onChange={(e) => updateFilters('level', e.target.value)}
         className="px-4 py-2.5 rounded-xl border border-border-light dark:border-slate-700 bg-white dark:bg-slate-800 text-foreground dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
       >
-        <option value="">Todos los niveles</option>
+        <option value="">{t.catalog.allLevels}</option>
         {COURSE_LEVELS.map(lvl => (
-          <option key={lvl} value={lvl}>{lvl}</option>
+          <option key={lvl} value={lvl}>{t.levels[lvl]}</option>
         ))}
       </select>
 
@@ -96,7 +98,7 @@ export function CatalogFilters() {
           className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium text-foreground-secondary dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
         >
           <X className="w-4 h-4" />
-          Limpiar
+          {t.catalog.clear}
         </button>
       )}
     </div>

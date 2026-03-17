@@ -6,7 +6,7 @@ export async function uploadGeneratedImage(params: {
   base64Data: string
   courseSlug: string
   lessonId: string
-  imageType: 'cover' | 'content'
+  imageType: 'cover' | 'content' | 'summary'
   imageName: string
 }): Promise<string> {
   const { base64Data, courseSlug, lessonId, imageType, imageName } = params

@@ -6,8 +6,10 @@ import { uploadGeneratedImage } from '@/lib/openai/upload-generated-image'
 import {
   buildCoverPrompt,
   buildContentPrompt,
+  buildSummaryPrompt,
   parsePendienteImgPlaceholders,
 } from '@/lib/openai/prompt-templates'
+import { extractLessonConcepts } from '@/lib/openai/extract-lesson-concepts'
 import { revalidatePath } from 'next/cache'
 
 async function requireAdmin() {
@@ -172,13 +174,80 @@ export async function generateContentImages(lessonId: string) {
   }
 }
 
+export async function generateLessonSummaryImage(lessonId: string) {
+  const { error: authError } = await requireAdmin()
+  if (authError) return { error: authError }
+
+  const serviceClient = createServiceClient()
+
+  const { data: lesson, error: lessonError } = await serviceClient
+    .from('lessons')
+    .select('id, title, content, order_index, summary_image_url, module_id')
+    .eq('id', lessonId)
+    .single()
+
+  if (lessonError || !lesson) return { error: 'Leccion no encontrada' }
+  if (!lesson.content) return { error: 'Leccion sin contenido para generar resumen' }
+
+  const { data: module } = await serviceClient
+    .from('modules')
+    .select('id, title, order_index, course_id')
+    .eq('id', lesson.module_id)
+    .single()
+
+  if (!module) return { error: 'Modulo no encontrado' }
+
+  const { data: course } = await serviceClient
+    .from('courses')
+    .select('id, title, slug')
+    .eq('id', module.course_id)
+    .single()
+
+  if (!course) return { error: 'Curso no encontrado' }
+
+  try {
+    const concepts = extractLessonConcepts(lesson.content, lesson.title)
+
+    const prompt = buildSummaryPrompt({
+      lessonTitle: lesson.title,
+      moduleTitle: module.title,
+      courseTitle: course.title,
+      moduleIndex: module.order_index,
+      keyConcepts: concepts.keyConcepts,
+      keyTerms: concepts.keyTerms,
+    })
+
+    const result = await generateImage({ prompt })
+
+    const publicUrl = await uploadGeneratedImage({
+      base64Data: result.imageBase64,
+      courseSlug: course.slug,
+      lessonId: lesson.id,
+      imageType: 'summary',
+      imageName: 'summary',
+    })
+
+    await serviceClient
+      .from('lessons')
+      .update({ summary_image_url: publicUrl })
+      .eq('id', lessonId)
+
+    revalidatePath('/admin/courses', 'layout')
+    revalidatePath(`/cursos/${course.slug}`, 'layout')
+    return { data: { url: publicUrl } }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Error desconocido'
+    return { error: `Error generando filmina: ${message}` }
+  }
+}
+
 export async function getImageGenerationStatus(courseId: string) {
   const { error: authError } = await requireAdmin()
   if (authError) return { error: authError }
 
   const serviceClient = createServiceClient()
 
-  const { data: course } = await serviceClient
+  const { data: course, error: courseError } = await serviceClient
     .from('courses')
     .select('id, slug, title')
     .eq('id', courseId)
@@ -199,7 +268,7 @@ export async function getImageGenerationStatus(courseId: string) {
   for (const mod of modules) {
     const { data: modLessons } = await serviceClient
       .from('lessons')
-      .select('id, title, order_index, cover_image_url, content')
+      .select('id, title, order_index, cover_image_url, summary_image_url, content')
       .eq('module_id', mod.id)
       .order('order_index')
 
@@ -218,6 +287,8 @@ export async function getImageGenerationStatus(courseId: string) {
         lessonIndex: lesson.order_index,
         hasCoverImage: !!lesson.cover_image_url,
         coverImageUrl: lesson.cover_image_url,
+        hasSummaryImage: !!lesson.summary_image_url,
+        summaryImageUrl: lesson.summary_image_url,
         pendingContentImages: placeholders.length,
       })
     }

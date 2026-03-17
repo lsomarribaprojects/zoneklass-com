@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { login, loginWithGoogle } from '@/actions/auth'
+import { useLocale } from '@/features/i18n'
 
 export function LoginForm() {
+  const { t } = useLocale()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -19,7 +21,7 @@ export function LoginForm() {
     const password = formData.get('password') as string
 
     if (!email || !password) {
-      setError('Todos los campos son requeridos')
+      setError(t.auth.allFieldsRequired)
       setLoading(false)
       return
     }
@@ -39,8 +41,8 @@ export function LoginForm() {
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl gradient-primary mb-4">
           <span className="text-white font-bold text-xl">ZK</span>
         </div>
-        <h1 className="text-display-xs text-foreground font-heading">Bienvenido de vuelta</h1>
-        <p className="text-foreground-secondary mt-1">Inicia sesion en ZoneKlass</p>
+        <h1 className="text-display-xs text-foreground font-heading">{t.auth.welcomeBack}</h1>
+        <p className="text-foreground-secondary mt-1">{t.auth.signInTo}</p>
       </div>
 
       {/* Google OAuth */}
@@ -55,7 +57,7 @@ export function LoginForm() {
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
           </svg>
-          Continuar con Google
+          {t.auth.continueWithGoogle}
         </button>
       </form>
 
@@ -64,7 +66,7 @@ export function LoginForm() {
           <div className="w-full border-t border-border"></div>
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-3 bg-gradient-to-br from-primary-50 via-white to-primary-50 text-foreground-muted">o</span>
+          <span className="px-3 bg-gradient-to-br from-primary-50 via-white to-primary-50 text-foreground-muted">{t.auth.or}</span>
         </div>
       </div>
 
@@ -72,13 +74,13 @@ export function LoginForm() {
         {/* Email */}
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
-            Correo electronico
+            {t.auth.email}
           </label>
           <input
             id="email"
             name="email"
             type="email"
-            placeholder="tu@email.com"
+            placeholder={t.auth.emailPlaceholder}
             required
             className="w-full px-4 py-2.5 bg-white text-foreground border border-border rounded-xl placeholder:text-foreground-muted transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent hover:border-border-dark"
           />
@@ -87,7 +89,7 @@ export function LoginForm() {
         {/* Password */}
         <div>
           <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1.5">
-            Contrasena
+            {t.auth.password}
           </label>
           <div className="relative">
             <input
@@ -102,7 +104,7 @@ export function LoginForm() {
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground-secondary transition-colors"
-              aria-label={showPassword ? 'Ocultar contrasena' : 'Mostrar contrasena'}
+              aria-label={showPassword ? t.auth.hidePassword : t.auth.showPassword}
             >
               {showPassword ? (
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -138,19 +140,19 @@ export function LoginForm() {
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
           ) : (
-            'Iniciar Sesion'
+            t.auth.signIn
           )}
         </button>
 
         {/* Links */}
         <div className="text-center space-y-2">
           <Link href="/forgot-password" className="text-sm text-primary-500 hover:text-primary-700 hover:underline block">
-            Olvidaste tu contrasena?
+            {t.auth.forgotPassword}
           </Link>
           <p className="text-sm text-foreground-secondary">
-            No tienes cuenta?{' '}
+            {t.auth.noAccount}{' '}
             <Link href="/signup" className="text-primary-500 hover:text-primary-700 font-medium hover:underline">
-              Registrate
+              {t.auth.signUp}
             </Link>
           </p>
         </div>

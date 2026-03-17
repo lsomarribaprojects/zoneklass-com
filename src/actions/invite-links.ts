@@ -279,7 +279,9 @@ export async function validateInviteCode(code: string): Promise<{
       course: {
         id: course.id as string,
         title: course.title as string,
+        title_en: (course.title_en as string | null) ?? null,
         description: course.description as string | null,
+        description_en: (course.description_en as string | null) ?? null,
         slug: course.slug as string,
         category: course.category as CourseWithStats['category'],
         level: course.level as CourseWithStats['level'],

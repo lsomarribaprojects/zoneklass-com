@@ -76,7 +76,9 @@ export async function getPublishedCourses(filters?: CatalogFilters): Promise<{
     return {
       id: course.id,
       title: course.title,
+      title_en: course.title_en ?? null,
       description: course.description,
+      description_en: course.description_en ?? null,
       slug: course.slug,
       category: course.category,
       level: course.level,
@@ -89,7 +91,7 @@ export async function getPublishedCourses(filters?: CatalogFilters): Promise<{
       modules_count: modules.length,
       lessons_count: allLessons.length,
       total_duration_minutes: allLessons.reduce((sum, l) => sum + (l.duration_minutes || 0), 0),
-      enrolled_count: 0, // RLS impide contar inscripciones de otros
+      enrolled_count: 0,
     }
   })
 
@@ -149,7 +151,9 @@ export async function getCourseBySlug(slug: string): Promise<{
     data: {
       id: course.id,
       title: course.title,
+      title_en: course.title_en ?? null,
       description: course.description,
+      description_en: course.description_en ?? null,
       slug: course.slug,
       category: course.category,
       level: course.level,
@@ -273,7 +277,9 @@ export async function getEnrolledCourses(): Promise<{
       return {
         id: course.id as string,
         title: course.title as string,
+        title_en: (course.title_en as string | null) ?? null,
         description: course.description as string | null,
+        description_en: (course.description_en as string | null) ?? null,
         slug: course.slug as string,
         category: course.category as CourseCategory,
         level: course.level as CourseLevel,

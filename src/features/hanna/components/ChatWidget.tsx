@@ -14,6 +14,7 @@ import { ConversationList } from './ConversationList'
 import { RatingModal } from './RatingModal'
 import { createClient } from '@/lib/supabase/client'
 import type { HannaConversation } from '@/features/hanna/types'
+import { useLocale } from '@/features/i18n'
 
 // ============================================
 // HANNA AI TUTOR - ChatWidget (Main Orchestrator)
@@ -22,6 +23,7 @@ import type { HannaConversation } from '@/features/hanna/types'
 const MODES = Object.keys(HANNA_MODE_LABELS) as HannaMode[]
 
 export function ChatWidget() {
+  const { t } = useLocale()
   const {
     isOpen,
     showHistory,
@@ -176,7 +178,7 @@ export function ChatWidget() {
         }
       }
     } catch (err) {
-      fullContent = 'Lo siento, hubo un error al procesar tu mensaje. Intentalo de nuevo.'
+      fullContent = t.hanna.errorMessage
     } finally {
       finishStreaming(fullContent)
 
@@ -215,7 +217,7 @@ export function ChatWidget() {
         <button
           type="button"
           onClick={toggleOpen}
-          aria-label="Abrir asistente Hanna"
+          aria-label={t.hanna.openAssistant}
           className="fixed bottom-20 right-6 lg:bottom-6 z-50 w-14 h-14 rounded-full bg-gradient-primary text-white shadow-elevated flex items-center justify-center hover:scale-105 active:scale-95 transition-transform focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
         >
           <Bot className="w-6 h-6" />
@@ -228,7 +230,7 @@ export function ChatWidget() {
       {isOpen && (
         <div
           role="dialog"
-          aria-label="Chat con Hanna IA"
+          aria-label={t.hanna.chatTitle}
           aria-modal="true"
           className="fixed inset-0 lg:inset-auto lg:bottom-6 lg:right-6 lg:w-[400px] lg:h-[600px] z-50 flex flex-col bg-white dark:bg-[--color-surface] lg:rounded-2xl lg:shadow-modal overflow-hidden animate-slide-up"
         >
@@ -251,14 +253,14 @@ export function ChatWidget() {
                 aria-expanded={showModeMenu}
                 className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors focus-visible:ring-2 focus-visible:ring-primary-500"
               >
-                {HANNA_MODE_LABELS[mode]}
+                {t.hanna.modes[mode]}
                 <ChevronDown className={`w-3 h-3 transition-transform ${showModeMenu ? 'rotate-180' : ''}`} />
               </button>
 
               {showModeMenu && (
                 <div
                   role="listbox"
-                  aria-label="Seleccionar modo de Hanna"
+                  aria-label={t.hanna.selectMode}
                   className="absolute top-full left-0 mt-1 w-52 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-elevated z-20 overflow-hidden animate-scale-in"
                 >
                   {MODES.map((m) => (
@@ -273,10 +275,10 @@ export function ChatWidget() {
                       }`}
                     >
                       <p className={`text-xs font-semibold ${mode === m ? 'text-primary-600 dark:text-primary-400' : 'text-foreground dark:text-slate-100'}`}>
-                        {HANNA_MODE_LABELS[m]}
+                        {t.hanna.modes[m]}
                       </p>
                       <p className="text-[10px] text-foreground-muted dark:text-slate-500 mt-0.5">
-                        {HANNA_MODE_DESCRIPTIONS[m]}
+                        {t.hanna.modeDescriptions[m]}
                       </p>
                     </button>
                   ))}
@@ -289,8 +291,8 @@ export function ChatWidget() {
               <button
                 type="button"
                 onClick={newConversation}
-                aria-label="Nueva conversacion"
-                title="Nueva conversacion"
+                aria-label={t.hanna.newConversation}
+                title={t.hanna.newConversation}
                 className="w-8 h-8 flex items-center justify-center rounded-lg text-foreground-secondary dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors focus-visible:ring-2 focus-visible:ring-primary-500"
               >
                 <Plus className="w-4 h-4" />
@@ -299,8 +301,8 @@ export function ChatWidget() {
               <button
                 type="button"
                 onClick={toggleHistory}
-                aria-label={showHistory ? 'Ocultar historial' : 'Ver historial'}
-                title="Historial"
+                aria-label={showHistory ? t.hanna.hideHistory : t.hanna.viewHistory}
+                title={t.hanna.history}
                 className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-primary-500 ${
                   showHistory
                     ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/30'
@@ -313,7 +315,7 @@ export function ChatWidget() {
               <button
                 type="button"
                 onClick={handleClose}
-                aria-label="Cerrar chat"
+                aria-label={t.hanna.closeChat}
                 className="w-8 h-8 flex items-center justify-center rounded-lg text-foreground-secondary dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors focus-visible:ring-2 focus-visible:ring-primary-500"
               >
                 <X className="w-4 h-4" />
@@ -328,7 +330,7 @@ export function ChatWidget() {
               <div className="absolute inset-0 z-10 bg-white dark:bg-[--color-surface] flex flex-col animate-fade-in">
                 <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-700">
                   <h3 className="text-sm font-semibold text-foreground dark:text-slate-100">
-                    Historial de conversaciones
+                    {t.hanna.conversationHistory}
                   </h3>
                 </div>
                 <ConversationList />
@@ -342,7 +344,7 @@ export function ChatWidget() {
             <div
               className="h-full overflow-y-auto px-4 py-4 bg-gray-50 dark:bg-slate-900/50 flex flex-col gap-3"
               role="list"
-              aria-label="Mensajes"
+              aria-label={t.hanna.messagesLabel}
               aria-live="polite"
             >
               {messages.length === 0 && !isStreaming && (
@@ -351,14 +353,10 @@ export function ChatWidget() {
                     <Bot className="w-7 h-7 text-white" />
                   </div>
                   <p className="text-sm font-semibold text-foreground dark:text-slate-100 mb-1">
-                    Hola, soy Hanna
+                    {t.hanna.greeting}
                   </p>
                   <p className="text-xs text-foreground-secondary dark:text-slate-400 max-w-[220px] leading-relaxed">
-                    Tu tutora de IA. Estoy en modo{' '}
-                    <strong className="text-primary-600 dark:text-primary-400">
-                      {HANNA_MODE_LABELS[mode]}
-                    </strong>
-                    . En que te puedo ayudar?
+                    {t.hanna.greetingMessage.replace('{mode}', t.hanna.modes[mode])}
                   </p>
                 </div>
               )}

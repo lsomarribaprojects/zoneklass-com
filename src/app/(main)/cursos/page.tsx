@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { getPublishedCourses, getEnrolledCourses } from '@/actions/enrollments'
-import { CatalogFilters, CourseGrid } from '@/features/courses/components/catalog'
+import { CatalogFilters, CatalogHeader, CourseGrid } from '@/features/courses/components/catalog'
 import type { CourseCategory, CourseLevel } from '@/types/database'
 
 export const metadata: Metadata = {
@@ -37,14 +37,7 @@ export default async function CursosPage({ searchParams }: PageProps) {
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-display-sm text-[#0F172A] dark:text-slate-100 font-heading">
-          Explorar Cursos
-        </h1>
-        <p className="text-foreground-secondary dark:text-slate-400 mt-1">
-          Descubre cursos y comienza a aprender hoy
-        </p>
-      </div>
+      <CatalogHeader />
 
       {/* Filters */}
       <Suspense fallback={null}>

@@ -7,6 +7,7 @@ import { AlertCircle, Loader2 } from 'lucide-react'
 import { getCourseBySlug } from '@/actions/enrollments'
 import { getLessonProgress, completeLesson } from '@/actions/progress'
 import { useChatStore } from '@/features/hanna/store/chatStore'
+import { useLocale, localized } from '@/features/i18n'
 import {
   LessonHeader,
   CourseSidebar,
@@ -21,6 +22,7 @@ export default function LessonPage() {
   const router = useRouter()
   const slug = params.slug as string
   const lessonId = params.lessonId as string
+  const { t, locale } = useLocale()
 
   // State
   const [course, setCourse] = useState<CourseDetail | null>(null)
@@ -65,7 +67,7 @@ export default function LessonPage() {
         // Fetch course
         const courseResult = await getCourseBySlug(slug)
         if (courseResult.error || !courseResult.data) {
-          setError(courseResult.error || 'Curso no encontrado')
+          setError(courseResult.error || t.course.courseNotFound)
           setIsLoading(false)
           return
         }
@@ -82,7 +84,7 @@ export default function LessonPage() {
         const allLessonsData = courseResult.data.modules.flatMap((m) => m.lessons)
         const lesson = allLessonsData.find((l) => l.id === lessonId)
         if (!lesson) {
-          setError('Lección no encontrada')
+          setError(t.lesson.lessonNotFound)
           setIsLoading(false)
           return
         }
@@ -95,7 +97,7 @@ export default function LessonPage() {
           setCompletedLessonIds(progressResult.data)
         }
       } catch (err) {
-        setError('Error al cargar la lección')
+        setError(t.lesson.loadError)
         console.error(err)
       } finally {
         setIsLoading(false)
@@ -111,13 +113,13 @@ export default function LessonPage() {
   useEffect(() => {
     if (course && currentLesson) {
       setLessonContext({
-        lessonTitle: currentLesson.title,
-        courseTitle: course.title,
-        lessonContent: currentLesson.content?.slice(0, 2000) ?? '',
+        lessonTitle: localized(currentLesson, 'title', locale),
+        courseTitle: localized(course, 'title', locale),
+        lessonContent: localized(currentLesson, 'content', locale)?.slice(0, 2000) ?? '',
       })
     }
     return () => clearLessonContext()
-  }, [course, currentLesson, setLessonContext, clearLessonContext])
+  }, [course, currentLesson, locale, setLessonContext, clearLessonContext])
 
   // Complete lesson handler
   const handleComplete = async () => {
@@ -129,7 +131,7 @@ export default function LessonPage() {
       const result = await completeLesson(currentLesson.id, course.id)
 
       if (result.error && !result.alreadyCompleted) {
-        alert(`Error: ${result.error}`)
+        alert(`${t.lesson.completeError}: ${result.error}`)
         setIsCompleting(false)
         return
       }
@@ -151,7 +153,7 @@ export default function LessonPage() {
         }, 500)
       }
     } catch (err) {
-      alert('Error al completar la lección')
+      alert(t.lesson.completeError)
       console.error(err)
     } finally {
       setIsCompleting(false)
@@ -190,16 +192,16 @@ export default function LessonPage() {
           <div className="bg-error-50 dark:bg-error-950/20 border border-error-200 dark:border-error-900/30 rounded-xl p-6 text-center">
             <AlertCircle className="w-12 h-12 text-error-500 dark:text-error-400 mx-auto mb-4" />
             <h2 className="font-heading font-semibold text-[#0F172A] dark:text-slate-100 text-xl mb-2">
-              {error || 'Lección no encontrada'}
+              {error || t.lesson.lessonNotFound}
             </h2>
             <p className="text-foreground-secondary dark:text-slate-400 mb-6">
-              No pudimos cargar esta lección. Por favor, intenta nuevamente.
+              {t.lesson.loadErrorMessage}
             </p>
             <Link
               href={`/cursos/${slug}`}
               className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 dark:bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors"
             >
-              Volver al Curso
+              {t.lesson.backToCourse}
             </Link>
           </div>
         </div>
@@ -211,7 +213,7 @@ export default function LessonPage() {
     <>
       {/* Header */}
       <LessonHeader
-        courseTitle={course.title}
+        courseTitle={localized(course, 'title', locale)}
         courseSlug={slug}
         currentLessonIndex={currentLessonIndex}
         totalLessons={totalLessons}
@@ -258,7 +260,7 @@ export default function LessonPage() {
 
       {/* Completion celebration */}
       {showCelebration && (
-        <CompletionCelebration courseTitle={course.title} courseSlug={slug} />
+        <CompletionCelebration courseTitle={localized(course, 'title', locale)} courseSlug={slug} />
       )}
     </>
   )

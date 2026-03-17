@@ -6,6 +6,7 @@ import { Button } from '@/components/ui'
 import {
   generateLessonCoverImage,
   generateContentImages,
+  generateLessonSummaryImage,
   getImageGenerationStatus,
 } from '@/actions/generate-images'
 import {
@@ -14,6 +15,7 @@ import {
   Sparkles,
   Loader2,
   CheckCircle,
+  BookOpen,
 } from 'lucide-react'
 
 interface LessonStatus {
@@ -24,6 +26,8 @@ interface LessonStatus {
   lessonIndex: number
   hasCoverImage: boolean
   coverImageUrl: string | null
+  hasSummaryImage: boolean
+  summaryImageUrl: string | null
   pendingContentImages: number
 }
 
@@ -45,6 +49,12 @@ export default function ImagesPage() {
   const [generatingContentId, setGeneratingContentId] = useState<string | null>(null)
   const [batchGenerating, setBatchGenerating] = useState(false)
   const [batchProgress, setBatchProgress] = useState(0)
+  const [batchErrors, setBatchErrors] = useState<string[]>([])
+  const [batchContentGenerating, setBatchContentGenerating] = useState(false)
+  const [batchContentProgress, setBatchContentProgress] = useState(0)
+  const [generatingSummaryId, setGeneratingSummaryId] = useState<string | null>(null)
+  const [batchSummaryGenerating, setBatchSummaryGenerating] = useState(false)
+  const [batchSummaryProgress, setBatchSummaryProgress] = useState(0)
 
   const fetchStatus = async () => {
     setLoading(true)
@@ -124,13 +134,16 @@ export default function ImagesPage() {
 
     setBatchGenerating(true)
     setBatchProgress(0)
+    setBatchErrors([])
     const pendingLessons = statusData.lessons.filter((l) => !l.hasCoverImage)
 
     for (let i = 0; i < pendingLessons.length; i++) {
       setBatchProgress(i + 1)
       const result = await generateLessonCoverImage(pendingLessons[i].id)
 
-      if (!result.error && result.data) {
+      if (result.error) {
+        setBatchErrors((prev) => [...prev, `${pendingLessons[i].title}: ${result.error}`])
+      } else if (result.data) {
         setStatusData((prev) =>
           prev
             ? {
@@ -144,12 +157,109 @@ export default function ImagesPage() {
             : null
         )
       }
-      // Small delay between requests
-      await new Promise((r) => setTimeout(r, 500))
+      // 4s delay between requests to respect free tier rate limits (~15 RPM)
+      if (i < pendingLessons.length - 1) {
+        await new Promise((r) => setTimeout(r, 4000))
+      }
     }
 
     setBatchGenerating(false)
-    setBatchProgress(0)
+  }
+
+  const handleBatchContent = async () => {
+    if (!statusData) return
+
+    setBatchContentGenerating(true)
+    setBatchContentProgress(0)
+    setBatchErrors([])
+    const lessonsWithContent = statusData.lessons.filter((l) => l.pendingContentImages > 0)
+
+    for (let i = 0; i < lessonsWithContent.length; i++) {
+      setBatchContentProgress(i + 1)
+      const result = await generateContentImages(lessonsWithContent[i].id)
+
+      if (result.error) {
+        setBatchErrors((prev) => [...prev, `${lessonsWithContent[i].title}: ${result.error}`])
+      } else if (result.data) {
+        const { replacements, total, errors } = result.data
+        if (errors && errors.length > 0) {
+          setBatchErrors((prev) => [...prev, ...errors.map((e) => `${lessonsWithContent[i].title}: ${e}`)])
+        }
+        setStatusData((prev) =>
+          prev
+            ? {
+                ...prev,
+                lessons: prev.lessons.map((l) =>
+                  l.id === lessonsWithContent[i].id
+                    ? { ...l, pendingContentImages: total - replacements }
+                    : l
+                ),
+              }
+            : null
+        )
+      }
+    }
+
+    setBatchContentGenerating(false)
+  }
+
+  const handleGenerateSummary = async (lessonId: string) => {
+    setGeneratingSummaryId(lessonId)
+    const result = await generateLessonSummaryImage(lessonId)
+
+    if (result.error) {
+      alert(result.error)
+    } else if (result.data) {
+      setStatusData((prev) =>
+        prev
+          ? {
+              ...prev,
+              lessons: prev.lessons.map((l) =>
+                l.id === lessonId
+                  ? { ...l, hasSummaryImage: true, summaryImageUrl: result.data!.url }
+                  : l
+              ),
+            }
+          : null
+      )
+    }
+    setGeneratingSummaryId(null)
+  }
+
+  const handleBatchSummaries = async () => {
+    if (!statusData) return
+
+    setBatchSummaryGenerating(true)
+    setBatchSummaryProgress(0)
+    setBatchErrors([])
+    const pendingLessons = statusData.lessons.filter((l) => !l.hasSummaryImage)
+
+    for (let i = 0; i < pendingLessons.length; i++) {
+      setBatchSummaryProgress(i + 1)
+      const result = await generateLessonSummaryImage(pendingLessons[i].id)
+
+      if (result.error) {
+        setBatchErrors((prev) => [...prev, `${pendingLessons[i].title}: ${result.error}`])
+      } else if (result.data) {
+        setStatusData((prev) =>
+          prev
+            ? {
+                ...prev,
+                lessons: prev.lessons.map((l) =>
+                  l.id === pendingLessons[i].id
+                    ? { ...l, hasSummaryImage: true, summaryImageUrl: result.data!.url }
+                    : l
+                ),
+              }
+            : null
+        )
+      }
+      if (i < pendingLessons.length - 1) {
+        await new Promise((r) => setTimeout(r, 4000))
+      }
+    }
+
+    setBatchSummaryGenerating(false)
   }
 
   if (loading) {
@@ -176,10 +286,12 @@ export default function ImagesPage() {
   const lessons = statusData.lessons
   const totalLessons = lessons.length
   const coversGenerated = lessons.filter((l) => l.hasCoverImage).length
+  const summariesGenerated = lessons.filter((l) => l.hasSummaryImage).length
   const pendingContentImages = lessons.reduce((sum, l) => sum + l.pendingContentImages, 0)
   const estimatedCost = (
     (totalLessons - coversGenerated) * 0.04 +
-    pendingContentImages * 0.04
+    pendingContentImages * 0.04 +
+    (totalLessons - summariesGenerated) * 0.04
   ).toFixed(2)
 
   // Group lessons by module
@@ -240,7 +352,7 @@ export default function ImagesPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -289,6 +401,34 @@ export default function ImagesPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">
+                Filminas Generadas
+              </p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                {summariesGenerated}/{totalLessons}
+              </p>
+            </div>
+            <div
+              className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                summariesGenerated === totalLessons
+                  ? 'bg-green-100 dark:bg-green-900/20'
+                  : 'bg-orange-100 dark:bg-orange-900/20'
+              }`}
+            >
+              <BookOpen
+                className={`w-6 h-6 ${
+                  summariesGenerated === totalLessons
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-orange-600 dark:text-orange-400'
+                }`}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Costo Estimado
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
@@ -303,19 +443,55 @@ export default function ImagesPage() {
       </div>
 
       {/* Batch Actions */}
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap items-center gap-4">
         <Button
           variant="primary"
           onClick={handleBatchCovers}
-          disabled={coversGenerated === totalLessons || batchGenerating}
+          disabled={coversGenerated === totalLessons || batchGenerating || batchContentGenerating}
           isLoading={batchGenerating}
           leftIcon={<Sparkles className="w-4 h-4" />}
         >
           {batchGenerating
-            ? `Generando... ${batchProgress}/${totalLessons - coversGenerated}`
-            : 'Generar Todos los Covers'}
+            ? `Generando covers... ${batchProgress}/${totalLessons - coversGenerated}`
+            : `Generar Todos los Covers (${totalLessons - coversGenerated})`}
+        </Button>
+        <Button
+          variant="primary"
+          onClick={handleBatchContent}
+          disabled={pendingContentImages === 0 || batchGenerating || batchContentGenerating}
+          isLoading={batchContentGenerating}
+          leftIcon={<ImageIcon className="w-4 h-4" />}
+        >
+          {batchContentGenerating
+            ? `Generando contenido... ${batchContentProgress}/${statusData.lessons.filter((l) => l.pendingContentImages > 0).length}`
+            : `Generar Todo el Contenido (${pendingContentImages})`}
+        </Button>
+        <Button
+          variant="primary"
+          onClick={handleBatchSummaries}
+          disabled={summariesGenerated === totalLessons || batchGenerating || batchContentGenerating || batchSummaryGenerating}
+          isLoading={batchSummaryGenerating}
+          leftIcon={<BookOpen className="w-4 h-4" />}
+        >
+          {batchSummaryGenerating
+            ? `Generando filminas... ${batchSummaryProgress}/${totalLessons - summariesGenerated}`
+            : `Generar Todas las Filminas (${totalLessons - summariesGenerated})`}
         </Button>
       </div>
+
+      {/* Batch Errors */}
+      {batchErrors.length > 0 && (
+        <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <h3 className="text-sm font-medium text-red-800 dark:text-red-400 mb-2">
+            Errores ({batchErrors.length})
+          </h3>
+          <ul className="text-sm text-red-700 dark:text-red-300 space-y-1 max-h-40 overflow-y-auto">
+            {batchErrors.map((err, i) => (
+              <li key={i}>{err}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Lessons Table */}
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -336,6 +512,12 @@ export default function ImagesPage() {
                   Imagenes Contenido
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Filmina
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Estado Filmina
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Acciones
                 </th>
               </tr>
@@ -347,7 +529,7 @@ export default function ImagesPage() {
                     {/* Module Header */}
                     <tr className="bg-gray-100 dark:bg-gray-900">
                       <td
-                        colSpan={5}
+                        colSpan={7}
                         className="px-6 py-3 text-sm font-bold text-gray-900 dark:text-white"
                       >
                         {moduleTitle}
@@ -406,6 +588,34 @@ export default function ImagesPage() {
                             </span>
                           </td>
 
+                          {/* Summary Thumbnail */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="w-12 h-12 rounded overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                              {lesson.summaryImageUrl ? (
+                                <img
+                                  src={lesson.summaryImageUrl}
+                                  alt="Filmina"
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <BookOpen className="w-6 h-6 text-gray-400" />
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Summary Status */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                lesson.hasSummaryImage
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                                  : 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400'
+                              }`}
+                            >
+                              {lesson.hasSummaryImage ? 'Generada' : 'Pendiente'}
+                            </span>
+                          </td>
+
                           {/* Actions */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-2">
@@ -435,6 +645,20 @@ export default function ImagesPage() {
                                 leftIcon={<Sparkles className="w-3 h-3" />}
                               >
                                 Contenido
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleGenerateSummary(lesson.id)}
+                                disabled={
+                                  generatingSummaryId === lesson.id ||
+                                  batchSummaryGenerating ||
+                                  lesson.hasSummaryImage
+                                }
+                                isLoading={generatingSummaryId === lesson.id}
+                                leftIcon={<BookOpen className="w-3 h-3" />}
+                              >
+                                Filmina
                               </Button>
                             </div>
                           </td>

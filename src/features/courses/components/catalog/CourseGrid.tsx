@@ -2,6 +2,7 @@
 
 import { BookOpen } from 'lucide-react'
 import type { CourseWithStats } from '@/types/database'
+import { useLocale } from '@/features/i18n'
 import { CourseCard } from './CourseCard'
 
 interface CourseGridProps {
@@ -10,6 +11,8 @@ interface CourseGridProps {
 }
 
 export function CourseGrid({ courses, enrolledCourseIds }: CourseGridProps) {
+  const { t } = useLocale()
+
   if (courses.length === 0) {
     return (
       <div className="bg-white dark:bg-slate-800 rounded-2xl p-12 border border-border-light dark:border-slate-700 text-center">
@@ -17,10 +20,10 @@ export function CourseGrid({ courses, enrolledCourseIds }: CourseGridProps) {
           <BookOpen className="w-8 h-8 text-foreground-muted dark:text-slate-500" />
         </div>
         <h3 className="text-lg font-heading font-semibold text-foreground dark:text-slate-100 mb-2">
-          No se encontraron cursos
+          {t.catalog.noCoursesFound}
         </h3>
         <p className="text-foreground-secondary dark:text-slate-400">
-          Intenta ajustar los filtros de busqueda
+          {t.catalog.adjustFilters}
         </p>
       </div>
     )

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { LocaleProvider } from '@/features/i18n'
 import './globals.css'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zoneklass.com'
@@ -63,7 +64,9 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <LocaleProvider>{children}</LocaleProvider>
+      </body>
     </html>
   )
 }

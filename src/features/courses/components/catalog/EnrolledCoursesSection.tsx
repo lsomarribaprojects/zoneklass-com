@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/useUser'
 import { getBatchCourseProgress } from '@/actions/progress'
 import type { CourseWithStats, CourseCategory, CourseLevel } from '@/types/database'
+import { useLocale } from '@/features/i18n'
 
 const CATEGORY_GRADIENTS: Record<string, string> = {
   'Programación': 'from-violet-500 to-purple-600',
@@ -28,6 +29,7 @@ interface EnrolledCourse extends CourseWithStats {
 }
 
 export function EnrolledCoursesSection() {
+  const { t } = useLocale()
   const { profile } = useUser()
   const [courses, setCourses] = useState<EnrolledCourse[]>([])
   const [loading, setLoading] = useState(true)
@@ -74,7 +76,9 @@ export function EnrolledCoursesSection() {
             return {
               id: course.id as string,
               title: course.title as string,
+              title_en: (course.title_en as string | null) ?? null,
               description: course.description as string | null,
+              description_en: (course.description_en as string | null) ?? null,
               slug: course.slug as string,
               category: course.category as CourseCategory,
               level: course.level as CourseLevel,
@@ -112,7 +116,7 @@ export function EnrolledCoursesSection() {
     return (
       <div>
         <h2 className="text-xl font-heading font-semibold text-foreground dark:text-slate-100 mb-4">
-          Mis Cursos
+          {t.course.myCoursesTitle}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map(i => (
@@ -133,24 +137,24 @@ export function EnrolledCoursesSection() {
     return (
       <div>
         <h2 className="text-xl font-heading font-semibold text-foreground dark:text-slate-100 mb-4">
-          Mis Cursos
+          {t.course.myCoursesTitle}
         </h2>
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-border-light dark:border-slate-700 text-center">
           <div className="w-16 h-16 mx-auto rounded-2xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center mb-4">
             <BookOpen className="w-8 h-8 text-primary-500" />
           </div>
           <h3 className="text-lg font-heading font-semibold text-foreground dark:text-slate-100 mb-2">
-            Aun no te has inscrito en ningun curso
+            {t.course.noEnrolledYet}
           </h3>
           <p className="text-foreground-secondary dark:text-slate-400 mb-4">
-            Explora nuestro catalogo y comienza a aprender hoy
+            {t.course.noEnrolledSubtitle}
           </p>
           <Link
             href="/cursos"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-primary-500 hover:bg-primary-600 text-white transition-colors"
           >
             <Compass className="w-4 h-4" />
-            Explorar Cursos
+            {t.course.exploreCourses}
           </Link>
         </div>
       </div>
@@ -161,13 +165,13 @@ export function EnrolledCoursesSection() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-heading font-semibold text-foreground dark:text-slate-100">
-          Mis Cursos
+          {t.course.myCoursesTitle}
         </h2>
         <Link
           href="/cursos"
           className="flex items-center gap-1 text-sm font-medium text-primary-500 hover:text-primary-600 transition-colors"
         >
-          Ver todos
+          {t.course.viewAll}
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>

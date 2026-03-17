@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Mail, Bell, BellOff, Save, Check, ArrowLeft } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { Mail, Bell, BellOff, Save, Check, ArrowLeft, Globe } from 'lucide-react'
 import Link from 'next/link'
 import { useUser } from '@/hooks/useUser'
 import { Card } from '@/components/ui/card'
@@ -9,20 +9,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { updateProfile } from '@/actions/auth'
 import { getEmailPreferences, updateEmailPreferences } from '@/actions/emails'
+import { useLocale } from '@/features/i18n'
+import type { Locale } from '@/features/i18n'
 import type { EmailPreferences } from '@/types/database'
-
-const EMAIL_PREF_ITEMS: Array<{
-  key: keyof Pick<EmailPreferences, 'welcome' | 'enrollment' | 'completion' | 'badges' | 'weekly_digest' | 'marketing'>
-  label: string
-  description: string
-}> = [
-  { key: 'welcome', label: 'Bienvenida', description: 'Email de bienvenida al registrarte' },
-  { key: 'enrollment', label: 'Inscripciones', description: 'Confirmacion al inscribirte en un curso' },
-  { key: 'completion', label: 'Cursos completados', description: 'Felicitacion al completar un curso' },
-  { key: 'badges', label: 'Badges', description: 'Notificacion al ganar un nuevo badge' },
-  { key: 'weekly_digest', label: 'Resumen semanal', description: 'Tu progreso y estadisticas de la semana' },
-  { key: 'marketing', label: 'Novedades', description: 'Nuevos cursos, features y promociones' },
-]
 
 function Toggle({ checked, onChange }: { checked: boolean; onChange: (val: boolean) => void }) {
   return (
@@ -42,8 +31,14 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (val: boole
   )
 }
 
+const LANGUAGE_OPTIONS: { value: Locale; label: string; flag: string }[] = [
+  { value: 'es', label: 'Espanol', flag: 'ES' },
+  { value: 'en', label: 'English', flag: 'EN' },
+]
+
 export default function SettingsPage() {
   const { profile, loading: userLoading } = useUser()
+  const { t, locale, setLocale } = useLocale()
   const [fullName, setFullName] = useState('')
   const [prefs, setPrefs] = useState<EmailPreferences | null>(null)
   const [prefsLoading, setPrefsLoading] = useState(true)
@@ -51,6 +46,15 @@ export default function SettingsPage() {
   const [savingPrefs, setSavingPrefs] = useState(false)
   const [profileFeedback, setProfileFeedback] = useState<string | null>(null)
   const [prefsFeedback, setPrefsFeedback] = useState<string | null>(null)
+
+  const emailPrefItems = useMemo(() => [
+    { key: 'welcome' as const, label: t.settings.welcome, description: t.settings.welcomeDesc },
+    { key: 'enrollment' as const, label: t.settings.enrollments, description: t.settings.enrollmentsDesc },
+    { key: 'completion' as const, label: t.settings.coursesCompleted, description: t.settings.coursesCompletedDesc },
+    { key: 'badges' as const, label: t.settings.badges, description: t.settings.badgesDesc },
+    { key: 'weekly_digest' as const, label: t.settings.weeklyDigest, description: t.settings.weeklyDigestDesc },
+    { key: 'marketing' as const, label: t.settings.news, description: t.settings.newsDesc },
+  ], [t])
 
   useEffect(() => {
     if (profile) {
@@ -74,7 +78,7 @@ export default function SettingsPage() {
     if (result?.error) {
       setProfileFeedback(result.error)
     } else {
-      setProfileFeedback('Perfil actualizado')
+      setProfileFeedback(t.settings.profileUpdated)
       setTimeout(() => setProfileFeedback(null), 3000)
     }
     setSavingProfile(false)
@@ -95,7 +99,7 @@ export default function SettingsPage() {
     if (error) {
       setPrefsFeedback(error)
     } else {
-      setPrefsFeedback('Preferencias guardadas')
+      setPrefsFeedback(t.settings.preferencesSaved)
       setTimeout(() => setPrefsFeedback(null), 3000)
     }
     setSavingPrefs(false)
@@ -133,26 +137,26 @@ export default function SettingsPage() {
           <ArrowLeft className="w-5 h-5 text-foreground-muted" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Configuracion</h1>
-          <p className="text-sm text-foreground-secondary">Gestiona tu perfil y preferencias</p>
+          <h1 className="text-2xl font-bold text-foreground">{t.settings.title}</h1>
+          <p className="text-sm text-foreground-secondary">{t.settings.subtitle}</p>
         </div>
       </div>
 
       {/* Profile Section */}
       <Card>
-        <h2 className="text-lg font-semibold text-foreground mb-4">Perfil</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">{t.settings.profile}</h2>
         <div className="space-y-4">
           <Input
-            label="Nombre completo"
+            label={t.settings.fullName}
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            placeholder="Tu nombre"
+            placeholder={t.settings.yourName}
           />
           <Input
-            label="Email"
+            label={t.settings.emailLabel}
             value={profile?.email || ''}
             disabled
-            hint="El email no se puede cambiar"
+            hint={t.settings.emailCannotChange}
           />
           <div className="flex items-center gap-3">
             <Button
@@ -160,13 +164,13 @@ export default function SettingsPage() {
               isLoading={savingProfile}
               leftIcon={<Save className="w-4 h-4" />}
             >
-              Guardar Perfil
+              {t.settings.saveProfile}
             </Button>
             {profileFeedback && (
               <span className={`text-sm flex items-center gap-1 ${
-                profileFeedback === 'Perfil actualizado' ? 'text-green-600' : 'text-red-500'
+                profileFeedback === t.settings.profileUpdated ? 'text-green-600' : 'text-red-500'
               }`}>
-                {profileFeedback === 'Perfil actualizado' && <Check className="w-4 h-4" />}
+                {profileFeedback === t.settings.profileUpdated && <Check className="w-4 h-4" />}
                 {profileFeedback}
               </span>
             )}
@@ -174,11 +178,37 @@ export default function SettingsPage() {
         </div>
       </Card>
 
+      {/* Language Section */}
+      <Card>
+        <div className="flex items-center gap-3 mb-4">
+          <Globe className="w-5 h-5 text-primary-500" />
+          <h2 className="text-lg font-semibold text-foreground">{t.settings.language}</h2>
+        </div>
+        <p className="text-sm text-foreground-secondary mb-4">{t.settings.languageDesc}</p>
+        <div className="flex gap-3">
+          {LANGUAGE_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setLocale(opt.value)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all border ${
+                locale === opt.value
+                  ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-300 dark:border-primary-700 text-primary-600 dark:text-primary-400'
+                  : 'bg-white dark:bg-slate-800 border-border-light dark:border-slate-700 text-foreground-secondary hover:border-primary-200 dark:hover:border-primary-800'
+              }`}
+            >
+              <span className="text-base">{opt.flag}</span>
+              {opt.label}
+              {locale === opt.value && <Check className="w-4 h-4" />}
+            </button>
+          ))}
+        </div>
+      </Card>
+
       {/* Email Preferences Section */}
       <Card>
         <div className="flex items-center gap-3 mb-6">
           <Mail className="w-5 h-5 text-primary-500" />
-          <h2 className="text-lg font-semibold text-foreground">Notificaciones por Email</h2>
+          <h2 className="text-lg font-semibold text-foreground">{t.settings.emailNotifications}</h2>
         </div>
 
         {prefsLoading ? (
@@ -196,7 +226,7 @@ export default function SettingsPage() {
         ) : prefs ? (
           <>
             <div className="space-y-5">
-              {EMAIL_PREF_ITEMS.map((item) => (
+              {emailPrefItems.map((item) => (
                 <div key={item.key} className="flex items-center justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -223,20 +253,20 @@ export default function SettingsPage() {
                 isLoading={savingPrefs}
                 leftIcon={<Save className="w-4 h-4" />}
               >
-                Guardar Preferencias
+                {t.settings.savePreferences}
               </Button>
               {prefsFeedback && (
                 <span className={`text-sm flex items-center gap-1 ${
-                  prefsFeedback === 'Preferencias guardadas' ? 'text-green-600' : 'text-red-500'
+                  prefsFeedback === t.settings.preferencesSaved ? 'text-green-600' : 'text-red-500'
                 }`}>
-                  {prefsFeedback === 'Preferencias guardadas' && <Check className="w-4 h-4" />}
+                  {prefsFeedback === t.settings.preferencesSaved && <Check className="w-4 h-4" />}
                   {prefsFeedback}
                 </span>
               )}
             </div>
           </>
         ) : (
-          <p className="text-sm text-foreground-muted">No se pudieron cargar las preferencias</p>
+          <p className="text-sm text-foreground-muted">{t.settings.couldNotLoad}</p>
         )}
       </Card>
     </div>

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { useLocale } from '@/features/i18n'
 
 interface LessonHeaderProps {
   courseTitle: string
@@ -18,6 +19,8 @@ export function LessonHeader({
   totalLessons,
   progressPercentage,
 }: LessonHeaderProps) {
+  const { t } = useLocale()
+
   return (
     <header className="fixed top-16 left-0 right-0 z-20 bg-white dark:bg-slate-900 border-b border-border dark:border-slate-700 lg:left-64">
       <div className="flex items-center justify-between px-4 py-3 lg:px-6">
@@ -27,7 +30,7 @@ export function LessonHeader({
           className="flex items-center gap-2 text-foreground-secondary dark:text-slate-400 hover:text-foreground dark:hover:text-slate-100 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
-          <span className="hidden sm:inline">Volver</span>
+          <span className="hidden sm:inline">{t.lesson.back}</span>
         </Link>
 
         {/* Center - Course info */}
@@ -36,7 +39,7 @@ export function LessonHeader({
             {courseTitle}
           </h1>
           <p className="text-xs text-foreground-secondary dark:text-slate-400 mt-0.5">
-            Lección {currentLessonIndex} de {totalLessons}
+            {t.lesson.lessonOf} {currentLessonIndex} {t.course.of} {totalLessons}
           </p>
         </div>
 

@@ -6,17 +6,19 @@ import { getPosts, toggleLike } from '@/actions/community'
 import type { PostCategory, PostWithAuthor } from '@/types/database'
 import { PostCard } from './PostCard'
 import { CreatePostModal } from './CreatePostModal'
-
-const categories = [
-  { value: null, label: 'Todos' },
-  { value: 'general' as PostCategory, label: 'General' },
-  { value: 'pregunta' as PostCategory, label: 'Preguntas' },
-  { value: 'recurso' as PostCategory, label: 'Recursos' },
-  { value: 'logro' as PostCategory, label: 'Logros' },
-  { value: 'presentacion' as PostCategory, label: 'Presentaciones' },
-]
+import { useLocale } from '@/features/i18n'
 
 export function CommunityFeed() {
+  const { t } = useLocale()
+
+  const categories = [
+    { value: null, label: t.community.all },
+    { value: 'general' as PostCategory, label: t.community.general },
+    { value: 'pregunta' as PostCategory, label: t.community.questions },
+    { value: 'recurso' as PostCategory, label: t.community.resources },
+    { value: 'logro' as PostCategory, label: t.community.achievements },
+    { value: 'presentacion' as PostCategory, label: t.community.introductions },
+  ]
   const [posts, setPosts] = useState<PostWithAuthor[]>([])
   const [activeCategory, setActiveCategory] = useState<PostCategory | null>(null)
   const [loading, setLoading] = useState(true)
@@ -71,10 +73,10 @@ export function CommunityFeed() {
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-display-sm text-[#0F172A] dark:text-slate-100 font-heading">
-              Comunidad
+              {t.community.title}
             </h1>
             <p className="text-foreground-secondary dark:text-slate-400 mt-1">
-              Conecta, comparte y aprende junto a otros estudiantes
+              {t.community.subtitle}
             </p>
           </div>
           {/* Desktop create button */}
@@ -83,7 +85,7 @@ export function CommunityFeed() {
             className="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-primary-500 text-white font-medium rounded-xl hover:bg-primary-600 transition-colors shadow-sm"
           >
             <Plus className="w-5 h-5" />
-            Crear Post
+            {t.community.createPost}
           </button>
         </div>
 
@@ -138,17 +140,17 @@ export function CommunityFeed() {
               <Plus className="w-8 h-8 text-primary-500" />
             </div>
             <h3 className="text-lg font-semibold text-foreground dark:text-slate-100 mb-2">
-              No hay posts todavía
+              {t.community.noPosts}
             </h3>
             <p className="text-foreground-secondary dark:text-slate-400 mb-6">
-              Sé el primero en compartir algo con la comunidad
+              {t.community.beFirst}
             </p>
             <button
               onClick={() => setShowCreateModal(true)}
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-500 text-white font-medium rounded-xl hover:bg-primary-600 transition-colors shadow-sm"
             >
               <Plus className="w-5 h-5" />
-              Crear Post
+              {t.community.createPost}
             </button>
           </div>
         ) : (
@@ -164,7 +166,7 @@ export function CommunityFeed() {
       <button
         onClick={() => setShowCreateModal(true)}
         className="sm:hidden fixed bottom-20 right-4 w-14 h-14 bg-primary-500 text-white rounded-full shadow-elevated hover:bg-primary-600 transition-all flex items-center justify-center z-40 active:scale-95"
-        aria-label="Crear post"
+        aria-label={t.community.createPost}
       >
         <Plus className="w-6 h-6" />
       </button>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { CheckCircle, Loader2 } from 'lucide-react'
 import { enrollInCourse } from '@/actions/enrollments'
 import { useUser } from '@/hooks/useUser'
+import { useLocale } from '@/features/i18n'
 
 interface EnrollButtonProps {
   courseId: string
@@ -14,6 +15,7 @@ interface EnrollButtonProps {
 }
 
 export function EnrollButton({ courseId, isEnrolled, courseSlug, price }: EnrollButtonProps) {
+  const { t } = useLocale()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [enrolled, setEnrolled] = useState(isEnrolled)
@@ -45,13 +47,13 @@ export function EnrollButton({ courseId, isEnrolled, courseSlug, price }: Enroll
           className="flex items-center justify-center gap-2 w-full px-6 py-3.5 rounded-xl text-base font-semibold bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 cursor-default"
         >
           <CheckCircle className="w-5 h-5" />
-          Ya estas inscrito
+          {t.course.alreadyEnrolled}
         </button>
         <button
           onClick={() => router.push(`/cursos/${courseSlug}`)}
           className="w-full px-6 py-3 rounded-xl text-base font-semibold bg-primary-500 hover:bg-primary-600 text-white transition-colors"
         >
-          Continuar Curso
+          {t.course.continueCourse}
         </button>
       </div>
     )
@@ -67,10 +69,10 @@ export function EnrollButton({ courseId, isEnrolled, courseSlug, price }: Enroll
         {isPending ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
-            Inscribiendo...
+            {t.course.enrolling}
           </>
         ) : (
-          price === 0 ? 'Inscribirme Gratis' : `Inscribirme - $${price}`
+          price === 0 ? t.course.enrollFree : t.course.enrollPrice.replace('{price}', String(price))
         )}
       </button>
       {error && (

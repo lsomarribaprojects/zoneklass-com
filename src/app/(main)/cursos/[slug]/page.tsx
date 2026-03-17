@@ -17,6 +17,7 @@ import {
 import { getCourseBySlug } from '@/actions/enrollments'
 import { getLessonProgress } from '@/actions/progress'
 import { EnrollButton } from '@/features/courses/components/catalog'
+import { useLocale, localized } from '@/features/i18n'
 import type { CourseDetail, CourseLevel } from '@/types/database'
 
 const LEVEL_STYLES: Record<CourseLevel, string> = {
@@ -43,6 +44,7 @@ function formatDuration(minutes: number): string {
 export default function CourseDetailPage() {
   const params = useParams()
   const slug = params.slug as string
+  const { t, locale } = useLocale()
 
   const [course, setCourse] = useState<CourseDetail | null>(null)
   const [loading, setLoading] = useState(true)
@@ -54,7 +56,7 @@ export default function CourseDetailPage() {
     async function load() {
       const result = await getCourseBySlug(slug)
       if (result.error || !result.data) {
-        setError(result.error || 'Curso no encontrado')
+        setError(result.error || t.course.courseNotFound)
       } else {
         setCourse(result.data)
         // Expandir el primer modulo por defecto
@@ -99,14 +101,14 @@ export default function CourseDetailPage() {
       <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto text-center py-20">
         <BookOpen className="w-16 h-16 text-foreground-muted dark:text-slate-500 mx-auto mb-4" />
         <h2 className="text-xl font-heading font-semibold text-foreground dark:text-slate-100 mb-2">
-          Curso no encontrado
+          {t.course.courseNotFound}
         </h2>
         <p className="text-foreground-secondary dark:text-slate-400 mb-6">{error}</p>
         <Link
           href="/cursos"
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-primary-500 hover:bg-primary-600 text-white transition-colors"
         >
-          Volver al catalogo
+          {t.course.backToCatalog}
         </Link>
       </div>
     )
@@ -133,7 +135,7 @@ export default function CourseDetailPage() {
         className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground-secondary dark:text-slate-400 hover:text-foreground dark:hover:text-slate-200 transition-colors mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
-        Volver al catalogo
+        {t.course.backToCatalog}
       </Link>
 
       {/* Hero */}
@@ -143,7 +145,7 @@ export default function CourseDetailPage() {
           {course.thumbnail_url ? (
             <img
               src={course.thumbnail_url}
-              alt={course.title}
+              alt={localized(course, 'title', locale)}
               className="w-full h-full object-cover"
             />
           ) : (
@@ -165,12 +167,12 @@ export default function CourseDetailPage() {
         {/* Content */}
         <div className="p-6 sm:p-8">
           <h1 className="text-2xl sm:text-3xl font-heading font-bold text-[#0F172A] dark:text-slate-100 mb-3">
-            {course.title}
+            {localized(course, 'title', locale)}
           </h1>
 
           {course.description && (
             <p className="text-foreground-secondary dark:text-slate-400 text-base leading-relaxed mb-6">
-              {course.description}
+              {localized(course, 'description', locale)}
             </p>
           )}
 
@@ -178,15 +180,15 @@ export default function CourseDetailPage() {
           <div className="flex flex-wrap gap-4 mb-6 pb-6 border-b border-border-light dark:border-slate-700">
             <div className="flex items-center gap-2 text-sm text-foreground-secondary dark:text-slate-400">
               <BookOpen className="w-4 h-4 text-primary-500" />
-              <span><strong className="text-foreground dark:text-slate-200">{totalLessons}</strong> lecciones</span>
+              <span><strong className="text-foreground dark:text-slate-200">{totalLessons}</strong> {t.course.lessons}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-foreground-secondary dark:text-slate-400">
               <Clock className="w-4 h-4 text-primary-500" />
-              <span><strong className="text-foreground dark:text-slate-200">{formatDuration(totalDuration)}</strong> de contenido</span>
+              <span><strong className="text-foreground dark:text-slate-200">{formatDuration(totalDuration)}</strong> {t.course.ofContent}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-foreground-secondary dark:text-slate-400">
               <BarChart3 className="w-4 h-4 text-primary-500" />
-              <span><strong className="text-foreground dark:text-slate-200">{course.modules.length}</strong> modulos</span>
+              <span><strong className="text-foreground dark:text-slate-200">{course.modules.length}</strong> {t.course.modules}</span>
             </div>
           </div>
 
@@ -195,7 +197,7 @@ export default function CourseDetailPage() {
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-foreground dark:text-slate-200">
-                  Tu progreso
+                  {t.course.yourProgress}
                 </span>
                 <span className="text-sm font-semibold text-primary-500">
                   {progressPercentage}%
@@ -208,7 +210,7 @@ export default function CourseDetailPage() {
                 />
               </div>
               <p className="text-xs text-foreground-muted dark:text-slate-500 mt-1">
-                {completedLessonIds.length} de {totalLessons} lecciones completadas
+                {completedLessonIds.length} {t.course.of} {totalLessons} {t.course.lessonsCompleted}
               </p>
             </div>
           )}
@@ -220,7 +222,7 @@ export default function CourseDetailPage() {
               className="flex items-center justify-center gap-2 w-full px-6 py-3.5 rounded-xl text-base font-semibold bg-primary-500 hover:bg-primary-600 text-white transition-colors shadow-lg shadow-primary-500/25"
             >
               <PlayCircle className="w-5 h-5" />
-              {completedLessonIds.length > 0 ? 'Continuar Curso' : 'Comenzar Curso'}
+              {completedLessonIds.length > 0 ? t.course.continueCourse : t.course.startCourse}
             </Link>
           ) : (
             <EnrollButton
@@ -236,7 +238,7 @@ export default function CourseDetailPage() {
       {/* Modules & Lessons */}
       <div>
         <h2 className="text-xl font-heading font-semibold text-[#0F172A] dark:text-slate-100 mb-4">
-          Contenido del Curso
+          {t.course.courseContent}
         </h2>
 
         <div className="space-y-3">
@@ -261,10 +263,10 @@ export default function CourseDetailPage() {
                     </span>
                     <div>
                       <h3 className="text-base font-semibold text-[#0F172A] dark:text-slate-100">
-                        {mod.title}
+                        {localized(mod, 'title', locale)}
                       </h3>
                       <p className="text-xs text-foreground-muted dark:text-slate-500 mt-0.5">
-                        {course.is_enrolled ? `${completedInModule}/` : ''}{mod.lessons.length} lecciones &middot; {formatDuration(moduleDuration)}
+                        {course.is_enrolled ? `${completedInModule}/` : ''}{mod.lessons.length} {t.course.lessons} &middot; {formatDuration(moduleDuration)}
                       </p>
                     </div>
                   </div>

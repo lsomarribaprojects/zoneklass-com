@@ -5,14 +5,9 @@ import Image from 'next/image'
 import { Trophy, Crown, Medal, Award } from 'lucide-react'
 import { getLeaderboard } from '@/actions/gamification'
 import type { LeaderboardEntry } from '@/types/database'
+import { useLocale } from '@/features/i18n'
 
 type Period = 'weekly' | 'monthly' | 'all'
-
-const PERIODS: { value: Period; label: string }[] = [
-  { value: 'weekly', label: 'Semanal' },
-  { value: 'monthly', label: 'Mensual' },
-  { value: 'all', label: 'Total' },
-]
 
 // ============================================
 // Avatar helper
@@ -22,10 +17,12 @@ function Avatar({
   src,
   name,
   size,
+  userLabel,
 }: {
   src: string | null
   name: string | null
   size: number
+  userLabel: string
 }) {
   const initials = (name ?? 'U')
     .split(' ')
@@ -46,7 +43,7 @@ function Avatar({
       <div className={`${sizeClass} relative rounded-full overflow-hidden flex-shrink-0`}>
         <Image
           src={src}
-          alt={name ?? 'Usuario'}
+          alt={name ?? userLabel}
           fill
           className="object-cover"
           sizes={`${size}px`}
@@ -68,10 +65,10 @@ function Avatar({
 // Level badge
 // ============================================
 
-function LevelBadge({ level }: { level: number }) {
+function LevelBadge({ level, lvlLabel }: { level: number; lvlLabel: string }) {
   return (
     <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 text-xs font-semibold">
-      Nv. {level}
+      {lvlLabel} {level}
     </span>
   )
 }
@@ -83,6 +80,7 @@ function LevelBadge({ level }: { level: number }) {
 interface PodiumCardProps {
   entry: LeaderboardEntry
   rank: 1 | 2 | 3
+  t: ReturnType<typeof useLocale>['t']
 }
 
 const RANK_CONFIG = {
@@ -127,7 +125,7 @@ const RANK_CONFIG = {
   },
 }
 
-function PodiumCard({ entry, rank }: PodiumCardProps) {
+function PodiumCard({ entry, rank, t }: PodiumCardProps) {
   const config = RANK_CONFIG[rank]
   const isFirst = rank === 1
 
@@ -138,7 +136,7 @@ function PodiumCard({ entry, rank }: PodiumCardProps) {
         ${config.border} ${config.bg} ${config.order} ${config.scale}
         ${entry.is_current_user ? 'shadow-elevated' : 'shadow-card'}
       `}
-      aria-label={`Posición ${rank}: ${entry.profile.full_name ?? 'Usuario'}`}
+      aria-label={`${t.leaderboard.position} ${rank}: ${entry.profile.full_name ?? t.leaderboard.user}`}
     >
       {/* Position icon */}
       <div className={`relative mb-3 ${isFirst ? 'mb-4' : ''}`}>
@@ -152,6 +150,7 @@ function PodiumCard({ entry, rank }: PodiumCardProps) {
           src={entry.profile.avatar_url}
           name={entry.profile.full_name}
           size={config.avatarSize as 64 | 48 | 32}
+          userLabel={t.leaderboard.user}
         />
         <span
           className={`absolute -bottom-2 -right-2 w-6 h-6 rounded-full ${config.iconBg} text-white text-xs font-bold flex items-center justify-center`}
@@ -164,12 +163,12 @@ function PodiumCard({ entry, rank }: PodiumCardProps) {
       <p
         className={`font-semibold text-center text-foreground dark:text-slate-100 leading-tight mt-2 ${isFirst ? 'text-base' : 'text-sm'}`}
       >
-        {entry.profile.full_name ?? 'Usuario'}
+        {entry.profile.full_name ?? t.leaderboard.user}
       </p>
 
       {/* Level */}
       <div className="mt-1.5">
-        <LevelBadge level={entry.profile.level} />
+        <LevelBadge level={entry.profile.level} lvlLabel={t.leaderboard.lvl} />
       </div>
 
       {/* XP */}
@@ -183,7 +182,7 @@ function PodiumCard({ entry, rank }: PodiumCardProps) {
       {entry.badges_count > 0 && (
         <div className="mt-1.5 flex items-center gap-1">
           <Award className={`w-3.5 h-3.5 ${config.label}`} aria-hidden="true" />
-          <span className={`text-xs ${config.label}`}>{entry.badges_count} badges</span>
+          <span className={`text-xs ${config.label}`}>{entry.badges_count} {t.leaderboard.badges}</span>
         </div>
       )}
     </div>
@@ -197,9 +196,11 @@ function PodiumCard({ entry, rank }: PodiumCardProps) {
 function LeaderboardRow({
   entry,
   isEven,
+  t,
 }: {
   entry: LeaderboardEntry
   isEven: boolean
+  t: ReturnType<typeof useLocale>['t']
 }) {
   return (
     <div
@@ -213,7 +214,7 @@ function LeaderboardRow({
             : 'bg-slate-50/60 dark:bg-slate-800/60'
         }
       `}
-      aria-label={`Posición ${entry.position}: ${entry.profile.full_name ?? 'Usuario'}`}
+      aria-label={`${t.leaderboard.position} ${entry.position}: ${entry.profile.full_name ?? t.leaderboard.user}`}
     >
       {/* Position number */}
       <span className="w-7 text-center text-sm font-semibold text-foreground-secondary dark:text-slate-400 flex-shrink-0">
@@ -221,17 +222,17 @@ function LeaderboardRow({
       </span>
 
       {/* Avatar */}
-      <Avatar src={entry.profile.avatar_url} name={entry.profile.full_name} size={32} />
+      <Avatar src={entry.profile.avatar_url} name={entry.profile.full_name} size={32} userLabel={t.leaderboard.user} />
 
       {/* Name + level */}
       <div className="flex-1 min-w-0">
         <p className="font-medium text-sm text-foreground dark:text-slate-100 truncate">
-          {entry.profile.full_name ?? 'Usuario'}
+          {entry.profile.full_name ?? t.leaderboard.user}
           {entry.is_current_user && (
-            <span className="ml-2 text-xs text-primary-500 font-normal">(Tú)</span>
+            <span className="ml-2 text-xs text-primary-500 font-normal">({t.leaderboard.you})</span>
           )}
         </p>
-        <LevelBadge level={entry.profile.level} />
+        <LevelBadge level={entry.profile.level} lvlLabel={t.leaderboard.lvl} />
       </div>
 
       {/* XP */}
@@ -301,17 +302,17 @@ function LeaderboardSkeleton() {
 // Empty state
 // ============================================
 
-function EmptyState() {
+function EmptyState({ t }: { t: ReturnType<typeof useLocale>['t'] }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
       <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-50 dark:bg-primary-900/20 mb-4">
         <Trophy className="w-8 h-8 text-primary-400" aria-hidden="true" />
       </div>
       <h3 className="text-lg font-semibold text-foreground dark:text-slate-100 mb-2">
-        No hay datos para este periodo
+        {t.leaderboard.noData}
       </h3>
       <p className="text-foreground-secondary dark:text-slate-400 max-w-xs">
-        Completa lecciones y participa en la comunidad para aparecer en el leaderboard.
+        {t.leaderboard.noDataDesc}
       </p>
     </div>
   )
@@ -322,9 +323,16 @@ function EmptyState() {
 // ============================================
 
 export function LeaderboardView() {
+  const { t } = useLocale()
   const [entries, setEntries] = useState<LeaderboardEntry[]>([])
   const [activePeriod, setActivePeriod] = useState<Period>('all')
   const [loading, setLoading] = useState(true)
+
+  const PERIODS: { value: Period; label: string }[] = [
+    { value: 'weekly', label: t.leaderboard.weekly },
+    { value: 'monthly', label: t.leaderboard.monthly },
+    { value: 'all', label: t.leaderboard.total },
+  ]
 
   useEffect(() => {
     async function loadLeaderboard() {
@@ -359,16 +367,16 @@ export function LeaderboardView() {
           <div className="flex items-center gap-3 mb-1">
             <Trophy className="w-7 h-7 text-primary-500" aria-hidden="true" />
             <h1 className="text-display-sm text-[#0F172A] dark:text-slate-100 font-heading">
-              Leaderboard
+              {t.leaderboard.title}
             </h1>
           </div>
           <p className="text-foreground-secondary dark:text-slate-400 mt-1 ml-10">
-            Compite con los mejores estudiantes
+            {t.leaderboard.subtitle}
           </p>
         </header>
 
         {/* Period tabs */}
-        <nav aria-label="Periodo del leaderboard" className="mb-8">
+        <nav aria-label={t.leaderboard.period} className="mb-8">
           <div className="flex gap-2">
             {PERIODS.map((period) => (
               <button
@@ -395,18 +403,18 @@ export function LeaderboardView() {
           <LeaderboardSkeleton />
         ) : entries.length === 0 ? (
           <div className="bg-white dark:bg-slate-800 rounded-xl border border-border-light dark:border-slate-700 shadow-card">
-            <EmptyState />
+            <EmptyState t={t} />
           </div>
         ) : (
           <div className="space-y-6 animate-fade-in">
             {/* Podium — top 3 */}
             {topThree.length > 0 && (
-              <section aria-label="Top 3 estudiantes">
+              <section aria-label={t.leaderboard.top3}>
                 <div className="flex gap-3 items-end">
                   {podiumOrder.map((entry, idx) => {
                     if (!entry) return <div key={idx} className="flex-1" />
                     const rank = (entry.position as 1 | 2 | 3)
-                    return <PodiumCard key={entry.profile.id} entry={entry} rank={rank} />
+                    return <PodiumCard key={entry.profile.id} entry={entry} rank={rank} t={t} />
                   })}
                 </div>
               </section>
@@ -415,17 +423,17 @@ export function LeaderboardView() {
             {/* Positions 4-20 */}
             {rest.length > 0 && (
               <section
-                aria-label="Posiciones 4 al 20"
+                aria-label={t.leaderboard.positions4to20}
                 className="bg-white dark:bg-slate-800 rounded-xl border border-border-light dark:border-slate-700 shadow-card overflow-hidden"
               >
                 <div className="px-4 py-3 border-b border-border-light dark:border-slate-700">
                   <h2 className="text-sm font-semibold text-foreground-secondary dark:text-slate-400 uppercase tracking-wide">
-                    Clasificacion
+                    {t.leaderboard.classification}
                   </h2>
                 </div>
                 <div className="divide-y divide-border-light dark:divide-slate-700/50">
                   {rest.map((entry, idx) => (
-                    <LeaderboardRow key={entry.profile.id} entry={entry} isEven={idx % 2 === 0} />
+                    <LeaderboardRow key={entry.profile.id} entry={entry} isEven={idx % 2 === 0} t={t} />
                   ))}
                 </div>
               </section>

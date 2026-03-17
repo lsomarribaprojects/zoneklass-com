@@ -6,8 +6,10 @@ import { BookOpen, Flame, Star, TrendingUp } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { EnrolledCoursesSection } from '@/features/courses/components/catalog'
 import { ProfileBadges } from '@/features/gamification/components/ProfileBadges'
+import { useLocale } from '@/features/i18n'
 
 export default function DashboardPage() {
+  const { t } = useLocale()
   const { profile, loading } = useUser()
   const [enrolledCount, setEnrolledCount] = useState(0)
 
@@ -39,10 +41,10 @@ export default function DashboardPage() {
       {/* Greeting */}
       <div className="mb-8">
         <h1 className="text-display-sm text-foreground dark:text-slate-100 font-heading">
-          Hola, {profile?.full_name?.split(' ')[0] || 'estudiante'}
+          {t.dashboard.greeting}, {profile?.full_name?.split(' ')[0] || 'estudiante'}
         </h1>
         <p className="text-foreground-secondary dark:text-slate-400 mt-1">
-          Bienvenido a ZoneKlass
+          {t.dashboard.welcome}
         </p>
       </div>
 
@@ -54,7 +56,7 @@ export default function DashboardPage() {
               <Star className="w-5 h-5 text-primary-500" />
             </div>
           </div>
-          <p className="text-sm text-foreground-secondary dark:text-slate-400">Nivel</p>
+          <p className="text-sm text-foreground-secondary dark:text-slate-400">{t.dashboard.level}</p>
           <p className="text-3xl font-bold text-foreground dark:text-slate-100 mt-1">
             {profile?.level ?? 1}
           </p>
@@ -66,7 +68,7 @@ export default function DashboardPage() {
               <TrendingUp className="w-5 h-5 text-primary-500" />
             </div>
           </div>
-          <p className="text-sm text-foreground-secondary dark:text-slate-400">XP Total</p>
+          <p className="text-sm text-foreground-secondary dark:text-slate-400">{t.dashboard.totalXp}</p>
           <p className="text-3xl font-bold text-primary-500 mt-1">
             {profile?.xp ?? 0}
           </p>
@@ -78,9 +80,9 @@ export default function DashboardPage() {
               <Flame className="w-5 h-5 text-warning-500" />
             </div>
           </div>
-          <p className="text-sm text-foreground-secondary dark:text-slate-400">Racha</p>
+          <p className="text-sm text-foreground-secondary dark:text-slate-400">{t.dashboard.streak}</p>
           <p className="text-3xl font-bold text-foreground dark:text-slate-100 mt-1">
-            {profile?.streak_days ?? 0} <span className="text-lg">dias</span>
+            {profile?.streak_days ?? 0} <span className="text-lg">{t.dashboard.days}</span>
           </p>
         </div>
 
@@ -90,7 +92,7 @@ export default function DashboardPage() {
               <BookOpen className="w-5 h-5 text-success-500" />
             </div>
           </div>
-          <p className="text-sm text-foreground-secondary dark:text-slate-400">Cursos</p>
+          <p className="text-sm text-foreground-secondary dark:text-slate-400">{t.dashboard.courses}</p>
           <p className="text-3xl font-bold text-foreground dark:text-slate-100 mt-1">
             {enrolledCount}
           </p>

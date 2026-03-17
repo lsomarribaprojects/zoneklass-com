@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { resetPassword } from '@/actions/auth'
+import { useLocale } from '@/features/i18n'
 
 export function ForgotPasswordForm() {
+  const { t } = useLocale()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -33,8 +35,8 @@ export function ForgotPasswordForm() {
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl gradient-primary mb-4">
           <span className="text-white font-bold text-xl">ZK</span>
         </div>
-        <h1 className="text-display-xs text-foreground font-heading">Recuperar contrasena</h1>
-        <p className="text-foreground-secondary mt-1">Te enviaremos un enlace para restablecerla</p>
+        <h1 className="text-display-xs text-foreground font-heading">{t.auth.recoverPassword}</h1>
+        <p className="text-foreground-secondary mt-1">{t.auth.recoverSubtitle}</p>
       </div>
 
       {success ? (
@@ -44,10 +46,10 @@ export function ForgotPasswordForm() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
-          <p className="text-success-700 font-medium">Revisa tu correo electronico</p>
-          <p className="text-success-600 text-sm mt-1">Te hemos enviado un enlace para restablecer tu contrasena.</p>
+          <p className="text-success-700 font-medium">{t.auth.checkEmail}</p>
+          <p className="text-success-600 text-sm mt-1">{t.auth.emailSentMessage}</p>
           <Link href="/login" className="inline-block mt-4 text-sm text-primary-500 hover:text-primary-700 hover:underline">
-            Volver al login
+            {t.auth.backToLogin}
           </Link>
         </div>
       ) : (
@@ -55,13 +57,13 @@ export function ForgotPasswordForm() {
           {/* Email */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
-              Correo electronico
+              {t.auth.email}
             </label>
             <input
               id="email"
               name="email"
               type="email"
-              placeholder="tu@email.com"
+              placeholder={t.auth.emailPlaceholder}
               required
               className="w-full px-4 py-2.5 bg-white text-foreground border border-border rounded-xl placeholder:text-foreground-muted transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent hover:border-border-dark"
             />
@@ -86,14 +88,14 @@ export function ForgotPasswordForm() {
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
             ) : (
-              'Enviar Enlace'
+              t.auth.sendLink
             )}
           </button>
 
           {/* Back to login */}
           <p className="text-center text-sm text-foreground-secondary">
             <Link href="/login" className="text-primary-500 hover:text-primary-700 hover:underline">
-              Volver al login
+              {t.auth.backToLogin}
             </Link>
           </p>
         </form>

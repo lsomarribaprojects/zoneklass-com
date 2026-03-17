@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown, ChevronUp, Play, CheckCircle, Clock } from 'lucide-react'
+import { useLocale, localized } from '@/features/i18n'
 import type { CourseDetail } from '@/types/database'
 
 interface CourseSidebarProps {
@@ -19,6 +20,7 @@ export function CourseSidebar({
   courseSlug,
 }: CourseSidebarProps) {
   const router = useRouter()
+  const { t, locale } = useLocale()
   const [expandedModules, setExpandedModules] = useState<Set<string>>(
     new Set(course.modules.map((m) => m.id))
   )
@@ -43,7 +45,7 @@ export function CourseSidebar({
     <aside className="hidden lg:block w-full h-[calc(100vh-8rem)] overflow-y-auto border-l border-border dark:border-slate-700 bg-surface dark:bg-slate-900">
       <div className="p-4">
         <h2 className="font-heading font-semibold text-[#0F172A] dark:text-slate-100 text-lg mb-4">
-          Contenido del Curso
+          {t.course.courseContent}
         </h2>
 
         <div className="space-y-2">
@@ -66,10 +68,10 @@ export function CourseSidebar({
                 >
                   <div className="flex-1 text-left">
                     <h3 className="font-heading font-medium text-foreground dark:text-slate-100 text-sm">
-                      {module.title}
+                      {localized(module, 'title', locale)}
                     </h3>
                     <p className="text-xs text-foreground-secondary dark:text-slate-400 mt-0.5">
-                      {completedInModule}/{moduleLessons.length} lecciones
+                      {completedInModule}/{moduleLessons.length} {t.course.lessons}
                     </p>
                   </div>
                   {isExpanded ? (
@@ -119,7 +121,7 @@ export function CourseSidebar({
                                   : 'text-foreground dark:text-slate-200'
                               }`}
                             >
-                              {lesson.title}
+                              {localized(lesson, 'title', locale)}
                             </p>
                             <div className="flex items-center gap-1 mt-1">
                               <Clock className="w-3 h-3 text-foreground-secondary dark:text-slate-400" />

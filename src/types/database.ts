@@ -13,6 +13,7 @@ export interface Profile {
   xp: number
   level: number
   streak_days: number
+  preferred_locale: 'es' | 'en'
   created_at: string
   updated_at: string
 }
@@ -27,7 +28,9 @@ export type CourseLevel = 'Principiante' | 'Intermedio' | 'Avanzado'
 export interface Course {
   id: string
   title: string
+  title_en: string | null
   description: string | null
+  description_en: string | null
   slug: string
   category: CourseCategory
   level: CourseLevel
@@ -43,6 +46,7 @@ export interface Module {
   id: string
   course_id: string
   title: string
+  title_en: string | null
   order_index: number
   created_at: string
 }
@@ -51,9 +55,12 @@ export interface Lesson {
   id: string
   module_id: string
   title: string
+  title_en: string | null
   content: string | null
+  content_en: string | null
   video_url: string | null
   cover_image_url: string | null
+  summary_image_url: string | null
   order_index: number
   duration_minutes: number
   created_at: string
@@ -366,7 +373,7 @@ export interface Database {
     Tables: {
       profiles: {
         Row: Profile
-        Insert: Omit<Profile, 'created_at' | 'updated_at' | 'xp' | 'level' | 'streak_days'>
+        Insert: Omit<Profile, 'created_at' | 'updated_at' | 'xp' | 'level' | 'streak_days' | 'preferred_locale'>
         Update: Partial<Omit<Profile, 'id' | 'created_at'>>
       }
       courses: {

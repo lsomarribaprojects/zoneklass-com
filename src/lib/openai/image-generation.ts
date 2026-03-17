@@ -23,7 +23,7 @@ export async function generateImage(
   const ai = new GoogleGenAI({ apiKey })
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash-preview-image-generation',
+    model: 'gemini-3.1-flash-image-preview',
     contents: [
       {
         role: 'user',

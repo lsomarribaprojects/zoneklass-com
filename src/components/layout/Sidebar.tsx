@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useMemo } from 'react'
 import {
   LayoutDashboard,
   BookOpen,
@@ -12,19 +13,21 @@ import {
   Shield,
 } from 'lucide-react'
 import { useUser } from '@/hooks/useUser'
-
-const SIDEBAR_ITEMS = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Mis Cursos', href: '/dashboard', icon: BookOpen },
-  { label: 'Explorar Cursos', href: '/cursos', icon: Compass },
-  { label: 'Comunidad', href: '/comunidad', icon: Users },
-  { label: 'Leaderboard', href: '/leaderboard', icon: Trophy },
-  { label: 'Mensajes', href: '/mensajes', icon: MessageCircle },
-]
+import { useLocale } from '@/features/i18n'
 
 export function Sidebar() {
   const pathname = usePathname()
   const { profile } = useUser()
+  const { t } = useLocale()
+
+  const SIDEBAR_ITEMS = useMemo(() => [
+    { label: t.nav.home, href: '/dashboard', icon: LayoutDashboard },
+    { label: t.nav.myCourses, href: '/dashboard', icon: BookOpen },
+    { label: t.nav.exploreCourses, href: '/cursos', icon: Compass },
+    { label: t.nav.community, href: '/comunidad', icon: Users },
+    { label: t.nav.leaderboard, href: '/leaderboard', icon: Trophy },
+    { label: t.nav.messages, href: '/mensajes', icon: MessageCircle },
+  ], [t])
 
   const xpForNextLevel = (profile?.level ?? 1) * 100
   const xpProgress = profile?.xp ? Math.min((profile.xp / xpForNextLevel) * 100, 100) : 0
@@ -63,7 +66,7 @@ export function Sidebar() {
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-all"
             >
               <Shield className="w-5 h-5" />
-              Panel Admin
+              {t.nav.adminPanel}
             </Link>
           </>
         )}
@@ -85,10 +88,10 @@ export function Sidebar() {
           )}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground dark:text-slate-100 truncate">
-              {profile?.full_name || 'Usuario'}
+              {profile?.full_name || t.nav.user}
             </p>
             <p className="text-xs text-foreground-muted dark:text-slate-500">
-              Nivel {profile?.level ?? 1}
+              {t.dashboard.level} {profile?.level ?? 1}
             </p>
           </div>
         </div>

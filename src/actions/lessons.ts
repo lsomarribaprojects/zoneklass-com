@@ -1,40 +1,34 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
 import { lessonSchema } from '@/features/courses/types/schemas'
-
-async function requireAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'No autenticado', supabase: null, user: null }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-    return { error: 'No autorizado', supabase: null, user: null }
-  }
-  return { error: null, supabase, user }
-}
+import { requireCourseAccess, requireInstructor, getCourseIdFromModule, getCourseIdFromLesson } from '@/lib/auth/permissions'
 
 export async function createLesson(formData: FormData) {
-  // 1. Verificar autorización
-  const { error: authError, supabase } = await requireAdmin()
-  if (authError || !supabase) {
-    return { error: authError || 'No autorizado' }
+  const moduleId = formData.get('module_id') as string
+  if (!moduleId) return { error: 'module_id es requerido' }
+
+  // Resolve module → course, then check ownership
+  const auth = await requireInstructor()
+  if (auth.error || !auth.supabase) {
+    return { error: auth.error || 'No autorizado' }
   }
 
-  // 2. Validar datos
+  const courseId = await getCourseIdFromModule(auth.supabase, moduleId)
+  if (!courseId) return { error: 'Módulo no encontrado' }
+
+  const { error: accessError, supabase } = await requireCourseAccess(courseId)
+  if (accessError || !supabase) {
+    return { error: accessError || 'No autorizado' }
+  }
+
+  // Validar datos
   const rawData = {
     title: formData.get('title'),
     content: formData.get('content'),
     video_url: formData.get('video_url'),
     duration_minutes: formData.get('duration_minutes'),
-    module_id: formData.get('module_id'),
+    module_id: moduleId,
   }
 
   const parsed = lessonSchema.safeParse(rawData)
@@ -42,7 +36,7 @@ export async function createLesson(formData: FormData) {
     return { error: parsed.error.issues[0].message }
   }
 
-  // 3. Calcular siguiente order_index
+  // Calcular siguiente order_index
   const { data: maxOrderData } = await supabase
     .from('lessons')
     .select('order_index')
@@ -53,7 +47,7 @@ export async function createLesson(formData: FormData) {
 
   const nextOrder = maxOrderData ? maxOrderData.order_index + 1 : 0
 
-  // 4. Insertar lección
+  // Insertar lección
   const { data, error } = await supabase
     .from('lessons')
     .insert({
@@ -67,19 +61,27 @@ export async function createLesson(formData: FormData) {
     return { error: error.message }
   }
 
-  // 5. Revalidar
   revalidatePath('/admin/courses', 'layout')
+  revalidatePath('/instructor/courses', 'layout')
   return { data }
 }
 
 export async function updateLesson(lessonId: string, formData: FormData) {
-  // 1. Verificar autorización
-  const { error: authError, supabase } = await requireAdmin()
-  if (authError || !supabase) {
-    return { error: authError || 'No autorizado' }
+  // Resolve lesson → module → course, then check ownership
+  const auth = await requireInstructor()
+  if (auth.error || !auth.supabase) {
+    return { error: auth.error || 'No autorizado' }
   }
 
-  // 2. Validar datos
+  const courseId = await getCourseIdFromLesson(auth.supabase, lessonId)
+  if (!courseId) return { error: 'Lección no encontrada' }
+
+  const { error: accessError, supabase } = await requireCourseAccess(courseId)
+  if (accessError || !supabase) {
+    return { error: accessError || 'No autorizado' }
+  }
+
+  // Validar datos
   const rawData = {
     title: formData.get('title'),
     content: formData.get('content'),
@@ -93,7 +95,7 @@ export async function updateLesson(lessonId: string, formData: FormData) {
     return { error: parsed.error.issues[0].message }
   }
 
-  // 3. Actualizar lección
+  // Actualizar lección
   const { data, error } = await supabase
     .from('lessons')
     .update(parsed.data)
@@ -105,19 +107,27 @@ export async function updateLesson(lessonId: string, formData: FormData) {
     return { error: error.message }
   }
 
-  // 4. Revalidar
   revalidatePath('/admin/courses', 'layout')
+  revalidatePath('/instructor/courses', 'layout')
   return { data }
 }
 
 export async function deleteLesson(lessonId: string) {
-  // 1. Verificar autorización
-  const { error: authError, supabase } = await requireAdmin()
-  if (authError || !supabase) {
-    return { error: authError || 'No autorizado' }
+  // Resolve lesson → module → course, then check ownership
+  const auth = await requireInstructor()
+  if (auth.error || !auth.supabase) {
+    return { error: auth.error || 'No autorizado' }
   }
 
-  // 2. Eliminar lección
+  const courseId = await getCourseIdFromLesson(auth.supabase, lessonId)
+  if (!courseId) return { error: 'Lección no encontrada' }
+
+  const { error: accessError, supabase } = await requireCourseAccess(courseId)
+  if (accessError || !supabase) {
+    return { error: accessError || 'No autorizado' }
+  }
+
+  // Eliminar lección
   const { error } = await supabase
     .from('lessons')
     .delete()
@@ -127,24 +137,31 @@ export async function deleteLesson(lessonId: string) {
     return { error: error.message }
   }
 
-  // 3. Revalidar
   revalidatePath('/admin/courses', 'layout')
+  revalidatePath('/instructor/courses', 'layout')
   return { data: { success: true } }
 }
 
 export async function reorderLessons(moduleId: string, lessonIds: string[]) {
-  // 1. Verificar autorización
-  const { error: authError, supabase } = await requireAdmin()
-  if (authError || !supabase) {
-    return { error: authError || 'No autorizado' }
+  // Resolve module → course, then check ownership
+  const auth = await requireInstructor()
+  if (auth.error || !auth.supabase) {
+    return { error: auth.error || 'No autorizado' }
   }
 
-  // 2. Validar entrada
+  const courseId = await getCourseIdFromModule(auth.supabase, moduleId)
+  if (!courseId) return { error: 'Módulo no encontrado' }
+
+  const { error: accessError, supabase } = await requireCourseAccess(courseId)
+  if (accessError || !supabase) {
+    return { error: accessError || 'No autorizado' }
+  }
+
   if (!Array.isArray(lessonIds) || lessonIds.length === 0) {
     return { error: 'IDs de lecciones inválidos' }
   }
 
-  // 3. Actualizar order_index para cada lección
+  // Actualizar order_index para cada lección
   const updates = lessonIds.map((id, index) =>
     supabase
       .from('lessons')
@@ -155,13 +172,12 @@ export async function reorderLessons(moduleId: string, lessonIds: string[]) {
 
   const results = await Promise.all(updates)
 
-  // 4. Verificar errores
   const firstError = results.find(result => result.error)
   if (firstError?.error) {
     return { error: firstError.error.message }
   }
 
-  // 5. Revalidar
   revalidatePath('/admin/courses', 'layout')
+  revalidatePath('/instructor/courses', 'layout')
   return { data: { success: true } }
 }

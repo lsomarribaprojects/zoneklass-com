@@ -4,23 +4,12 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { courseSchema } from '@/features/courses/types/schemas'
-
-async function requireAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'No autenticado', supabase: null, user: null }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-    return { error: 'No autorizado', supabase: null, user: null }
-  }
-  return { error: null, supabase, user }
-}
+import {
+  requireInstructor,
+  requireCourseOwnership,
+  canCreateCourse,
+  requireAdmin
+} from '@/lib/auth/permissions'
 
 function generateSlug(title: string): string {
   return title.toLowerCase()
@@ -32,13 +21,27 @@ function generateSlug(title: string): string {
 }
 
 export async function createCourse(formData: FormData) {
-  // 1. Verificar autorización
-  const { error: authError, supabase, user } = await requireAdmin()
+  // 1. Verificar autorización (instructor o admin)
+  const { error: authError, supabase, user } = await requireInstructor()
   if (authError || !supabase || !user) {
     return { error: authError || 'No autorizado' }
   }
 
-  // 2. Validar datos
+  // 2. Verificar límites del plan (solo para instructores, no para admins)
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role === 'instructor') {
+    const { canCreate, error: limitError } = await canCreateCourse(user.id)
+    if (!canCreate) {
+      return { error: limitError || 'Has alcanzado el límite de cursos de tu plan' }
+    }
+  }
+
+  // 3. Validar datos
   const rawData = {
     title: formData.get('title'),
     description: formData.get('description'),
@@ -54,10 +57,10 @@ export async function createCourse(formData: FormData) {
     return { error: parsed.error.issues[0].message }
   }
 
-  // 3. Auto-generar slug si está vacío
+  // 4. Auto-generar slug si está vacío
   const slug = parsed.data.slug || generateSlug(parsed.data.title)
 
-  // 4. Verificar que el slug no esté en uso
+  // 5. Verificar que el slug no esté en uso
   const { data: existingCourse } = await supabase
     .from('courses')
     .select('id')
@@ -68,7 +71,7 @@ export async function createCourse(formData: FormData) {
     return { error: 'El slug ya está en uso. Elige uno diferente.' }
   }
 
-  // 5. Insertar curso
+  // 6. Insertar curso
   const { data, error } = await supabase
     .from('courses')
     .insert({
@@ -83,19 +86,23 @@ export async function createCourse(formData: FormData) {
     return { error: error.message }
   }
 
-  // 6. Revalidar y redirigir
+  // 7. Revalidar y redirigir
   revalidatePath('/admin/courses', 'layout')
+  revalidatePath('/instructor/courses', 'layout')
   redirect(`/admin/courses/${data.id}/edit`)
 }
 
 export async function updateCourse(courseId: string, formData: FormData) {
-  // 1. Verificar autorización
-  const { error: authError, supabase } = await requireAdmin()
-  if (authError || !supabase) {
-    return { error: authError || 'No autorizado' }
+  // 1. Verificar ownership (instructor puede editar solo SUS cursos)
+  const { error: ownershipError, isOwner } = await requireCourseOwnership(courseId)
+  if (ownershipError || !isOwner) {
+    return { error: ownershipError || 'No eres el propietario de este curso' }
   }
 
-  // 2. Validar datos
+  // 2. Get supabase client
+  const supabase = await createClient()
+
+  // 3. Validar datos
   const rawData = {
     title: formData.get('title'),
     description: formData.get('description'),
@@ -111,7 +118,7 @@ export async function updateCourse(courseId: string, formData: FormData) {
     return { error: parsed.error.issues[0].message }
   }
 
-  // 3. Verificar que el slug no esté en uso por otro curso
+  // 4. Verificar que el slug no esté en uso por otro curso
   const { data: existingCourse } = await supabase
     .from('courses')
     .select('id')
@@ -123,7 +130,7 @@ export async function updateCourse(courseId: string, formData: FormData) {
     return { error: 'El slug ya está en uso por otro curso.' }
   }
 
-  // 4. Actualizar curso
+  // 5. Actualizar curso (RLS garantiza que solo el owner puede actualizar)
   const { data, error } = await supabase
     .from('courses')
     .update(parsed.data)
@@ -135,19 +142,23 @@ export async function updateCourse(courseId: string, formData: FormData) {
     return { error: error.message }
   }
 
-  // 5. Revalidar
+  // 6. Revalidar
   revalidatePath('/admin/courses', 'layout')
+  revalidatePath('/instructor/courses', 'layout')
   return { data }
 }
 
 export async function deleteCourse(courseId: string) {
-  // 1. Verificar autorización
-  const { error: authError, supabase } = await requireAdmin()
-  if (authError || !supabase) {
-    return { error: authError || 'No autorizado' }
+  // 1. Verificar ownership (instructor puede eliminar solo SUS cursos)
+  const { error: ownershipError, isOwner } = await requireCourseOwnership(courseId)
+  if (ownershipError || !isOwner) {
+    return { error: ownershipError || 'No eres el propietario de este curso' }
   }
 
-  // 2. Eliminar curso (CASCADE manejará módulos y lecciones)
+  // 2. Get supabase client
+  const supabase = await createClient()
+
+  // 3. Eliminar curso (CASCADE manejará módulos y lecciones)
   const { error } = await supabase
     .from('courses')
     .delete()
@@ -157,19 +168,23 @@ export async function deleteCourse(courseId: string) {
     return { error: error.message }
   }
 
-  // 3. Revalidar y redirigir
+  // 4. Revalidar y redirigir
   revalidatePath('/admin/courses', 'layout')
+  revalidatePath('/instructor/courses', 'layout')
   redirect('/admin/courses')
 }
 
 export async function togglePublish(courseId: string) {
-  // 1. Verificar autorización
-  const { error: authError, supabase } = await requireAdmin()
-  if (authError || !supabase) {
-    return { error: authError || 'No autorizado' }
+  // 1. Verificar ownership (instructor puede publicar solo SUS cursos)
+  const { error: ownershipError, isOwner } = await requireCourseOwnership(courseId)
+  if (ownershipError || !isOwner) {
+    return { error: ownershipError || 'No eres el propietario de este curso' }
   }
 
-  // 2. Obtener estado actual
+  // 2. Get supabase client
+  const supabase = await createClient()
+
+  // 3. Obtener estado actual
   const { data: course, error: fetchError } = await supabase
     .from('courses')
     .select('is_published')
@@ -180,7 +195,7 @@ export async function togglePublish(courseId: string) {
     return { error: fetchError?.message || 'Curso no encontrado' }
   }
 
-  // 3. Toggle is_published
+  // 4. Toggle is_published
   const { data, error } = await supabase
     .from('courses')
     .update({ is_published: !course.is_published })
@@ -192,7 +207,9 @@ export async function togglePublish(courseId: string) {
     return { error: error.message }
   }
 
-  // 4. Revalidar
+  // 5. Revalidar
   revalidatePath('/admin/courses', 'layout')
+  revalidatePath('/instructor/courses', 'layout')
+  revalidatePath('/marketplace', 'layout')
   return { data }
 }

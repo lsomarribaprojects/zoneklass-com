@@ -50,6 +50,11 @@ export interface Dictionary {
     checkEmail: string
     emailSentMessage: string
     backToLogin: string
+    iAmA: string
+    student: string
+    instructor: string
+    studentDescription: string
+    instructorDescription: string
   }
   dashboard: {
     greeting: string
@@ -195,6 +200,83 @@ export interface Dictionary {
     clear: string
     noCoursesFound: string
     adjustFilters: string
+  }
+  instructor: {
+    nav: {
+      dashboard: string
+      myCourses: string
+      settings: string
+    }
+    dashboard: {
+      welcome: string
+      totalCourses: string
+      publishedCourses: string
+      totalLessons: string
+      totalHours: string
+      recentCourses: string
+      noCourses: string
+      createFirst: string
+      aiCredits: string
+      creditsRemaining: string
+    }
+    courses: {
+      title: string
+      createNew: string
+      editCourse: string
+      updateDetails: string
+      modules: string
+      addModule: string
+      createFirstModule: string
+      noModules: string
+      publish: string
+      unpublish: string
+      delete: string
+      deleteConfirm: string
+      deleteWarning: string
+      images: string
+    }
+    editor: {
+      autoSaved: string
+      saving: string
+      saveError: string
+      editMode: string
+      previewMode: string
+      splitMode: string
+      imageGallery: string
+      uploadImage: string
+      generateAI: string
+    }
+    ai: {
+      assistant: string
+      openAssistant: string
+      credits: string
+      creditsRemaining: string
+      sendMessage: string
+      placeholder: string
+      welcome: string
+      welcomeMessage: string
+      improveContent: string
+      addExercises: string
+      simplify: string
+      generateQuiz: string
+      suggestStructure: string
+      generateDescription: string
+      reviewCourse: string
+      suggestImprovements: string
+      pedagogyTips: string
+      bestPractices: string
+      courseIdeas: string
+      memoryLearned: string
+    }
+    checklist: {
+      title: string
+      courseDetails: string
+      modulesWithLessons: string
+      allLessonsContent: string
+      thumbnail: string
+      price: string
+      ready: string
+    }
   }
   categories: Record<string, string>
   levels: Record<string, string>

@@ -29,7 +29,7 @@ export function useUser(): UseUserReturn {
 
       const { data } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, email, full_name, avatar_url, role, xp, level, streak_days, preferred_locale, bio, bio_en, website_url, social_links, is_instructor_verified, instructor_since, created_at, updated_at')
         .eq('id', user.id)
         .single()
 

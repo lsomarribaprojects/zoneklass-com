@@ -2,12 +2,28 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui'
 import { Modal } from '@/components/ui/modal'
 import { CourseForm } from '@/features/courses/components/admin/CourseForm'
-import { ModuleCard } from '@/features/courses/components/admin/ModuleCard'
+import { SortableModuleCard } from '@/features/courses/components/admin/SortableModuleCard'
 import { ModuleFormModal } from '@/features/courses/components/admin/ModuleFormModal'
+import { CourseChecklist } from '@/features/courses/components/shared/CourseChecklist'
 import { deleteCourse, togglePublish } from '@/actions/courses'
 import { deleteModule, reorderModules } from '@/actions/modules'
 import type { CourseWithModules, Module } from '@/types/database'
@@ -27,6 +43,14 @@ export default function EditCoursePage() {
   const [isTogglingPublish, setIsTogglingPublish] = useState(false)
 
   const supabase = createClient()
+
+  // Drag-and-drop sensors for modules
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   const fetchCourse = async () => {
     setLoading(true)
@@ -150,6 +174,29 @@ export default function EditCoursePage() {
     }
   }
 
+  // Handle drag end for modules
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (!over || active.id === over.id || !course?.modules) return
+
+    const mods = course.modules
+    const oldIndex = mods.findIndex((m) => m.id === active.id)
+    const newIndex = mods.findIndex((m) => m.id === over.id)
+
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const reordered = arrayMove(mods, oldIndex, newIndex)
+    const newOrder = reordered.map((m) => m.id)
+
+    const result = await reorderModules(courseId, newOrder)
+    if (result?.error) {
+      console.error('Error reordering modules:', result.error)
+    } else {
+      await fetchCourse()
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -215,6 +262,11 @@ export default function EditCoursePage() {
           Detalles del Curso
         </h2>
 
+        {/* Course Checklist */}
+        <div className="mb-6">
+          <CourseChecklist course={course} />
+        </div>
+
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <CourseForm course={course} onSuccess={fetchCourse} />
         </div>
@@ -279,22 +331,33 @@ export default function EditCoursePage() {
             </Button>
           </div>
         ) : (
-          <div className="space-y-4">
-            {modules.map((module, index) => (
-              <ModuleCard
-                key={module.id}
-                module={module}
-                courseId={courseId}
-                isFirst={index === 0}
-                isLast={index === modules.length - 1}
-                onMoveUp={() => handleMoveModuleUp(module, index)}
-                onMoveDown={() => handleMoveModuleDown(module, index)}
-                onEdit={() => handleEditModule(module)}
-                onDelete={() => handleDeleteModule(module.id)}
-                onRefresh={fetchCourse}
-              />
-            ))}
-          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={modules.map((m) => m.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-4">
+                {modules.map((module, index) => (
+                  <SortableModuleCard
+                    key={module.id}
+                    module={module}
+                    courseId={courseId}
+                    isFirst={index === 0}
+                    isLast={index === modules.length - 1}
+                    onMoveUp={() => handleMoveModuleUp(module, index)}
+                    onMoveDown={() => handleMoveModuleDown(module, index)}
+                    onEdit={() => handleEditModule(module)}
+                    onDelete={() => handleDeleteModule(module.id)}
+                    onRefresh={fetchCourse}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         )}
       </section>
 

@@ -13,6 +13,7 @@ interface LessonFormModalProps {
   onClose: () => void
   moduleId: string
   courseId: string
+  basePath?: string
   lesson?: Lesson
   onSuccess: () => void
 }
@@ -22,6 +23,7 @@ export function LessonFormModal({
   onClose,
   moduleId,
   courseId,
+  basePath = '/admin/courses',
   lesson,
   onSuccess,
 }: LessonFormModalProps) {
@@ -169,7 +171,7 @@ export function LessonFormModal({
               <span>
                 Para editar el contenido rico, usa el boton{' '}
                 <a
-                  href={`/admin/courses/${courseId}/lessons/${lesson?.id}/edit`}
+                  href={`${basePath}/${courseId}/lessons/${lesson?.id}/edit`}
                   className="font-medium underline"
                 >
                   Editor de Contenido

@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { generateImage } from '@/lib/openai/image-generation'
 import { uploadGeneratedImage } from '@/lib/openai/upload-generated-image'
 import {
@@ -13,27 +13,24 @@ import {
 } from '@/lib/openai/prompt-templates'
 import { extractLessonConcepts } from '@/lib/openai/extract-lesson-concepts'
 import { revalidatePath } from 'next/cache'
-
-async function requireAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'No autenticado' }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-    return { error: 'No autorizado' }
-  }
-  return { error: null }
-}
+import {
+  requireInstructor,
+  requireCourseAccess,
+  getCourseIdFromLesson,
+  hasAICredits,
+  deductAICredits,
+} from '@/lib/auth/permissions'
 
 export async function generateCourseCoverImage(courseId: string) {
-  const { error: authError } = await requireAdmin()
-  if (authError) return { error: authError }
+  // Check course access (ownership for instructors, any for admins)
+  const { error: authError, user } = await requireCourseAccess(courseId)
+  if (authError || !user) return { error: authError || 'No autorizado' }
+
+  // Check AI credits (2 credits for images)
+  const creditCheck = await hasAICredits(user.id, 2)
+  if (!creditCheck.hasCredits) {
+    return { error: creditCheck.error || 'No tienes suficientes créditos IA' }
+  }
 
   const serviceClient = createServiceClient()
 
@@ -72,7 +69,11 @@ export async function generateCourseCoverImage(courseId: string) {
       .update({ thumbnail_url: publicUrl })
       .eq('id', courseId)
 
+    // Deduct AI credits
+    await deductAICredits(user.id, 2, 'image', courseId)
+
     revalidatePath('/admin/courses', 'layout')
+    revalidatePath('/instructor/courses', 'layout')
     revalidatePath('/cursos', 'layout')
     return { data: { url: publicUrl } }
   } catch (err) {
@@ -82,8 +83,17 @@ export async function generateCourseCoverImage(courseId: string) {
 }
 
 export async function insertAndGenerateContentImages(lessonId: string) {
-  const { error: authError } = await requireAdmin()
-  if (authError) return { error: authError }
+  // Resolve lesson → course, then check ownership
+  const auth = await requireInstructor()
+  if (auth.error || !auth.supabase || !auth.user) {
+    return { error: auth.error || 'No autorizado' }
+  }
+
+  const courseId = await getCourseIdFromLesson(auth.supabase, lessonId)
+  if (!courseId) return { error: 'Leccion no encontrada' }
+
+  const { error: accessError } = await requireCourseAccess(courseId)
+  if (accessError) return { error: accessError }
 
   const serviceClient = createServiceClient()
 
@@ -109,8 +119,11 @@ export async function insertAndGenerateContentImages(lessonId: string) {
 }
 
 export async function generateLessonCoverImage(lessonId: string) {
-  const { error: authError } = await requireAdmin()
-  if (authError) return { error: authError }
+  // Resolve lesson → course, then check ownership
+  const auth = await requireInstructor()
+  if (auth.error || !auth.supabase || !auth.user) {
+    return { error: auth.error || 'No autorizado' }
+  }
 
   const serviceClient = createServiceClient()
 
@@ -130,10 +143,22 @@ export async function generateLessonCoverImage(lessonId: string) {
 
   if (!module) return { error: 'Modulo no encontrado' }
 
+  const courseId = module.course_id
+
+  // Check course access
+  const { error: accessError } = await requireCourseAccess(courseId)
+  if (accessError) return { error: accessError }
+
+  // Check AI credits
+  const creditCheck = await hasAICredits(auth.user.id, 2)
+  if (!creditCheck.hasCredits) {
+    return { error: creditCheck.error || 'No tienes suficientes créditos IA' }
+  }
+
   const { data: course } = await serviceClient
     .from('courses')
     .select('id, title, slug')
-    .eq('id', module.course_id)
+    .eq('id', courseId)
     .single()
 
   if (!course) return { error: 'Curso no encontrado' }
@@ -162,7 +187,11 @@ export async function generateLessonCoverImage(lessonId: string) {
       .update({ cover_image_url: publicUrl })
       .eq('id', lessonId)
 
+    // Deduct AI credits
+    await deductAICredits(auth.user.id, 2, 'image', lessonId)
+
     revalidatePath('/admin/courses', 'layout')
+    revalidatePath('/instructor/courses', 'layout')
     return { data: { url: publicUrl } }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Error desconocido'
@@ -171,8 +200,11 @@ export async function generateLessonCoverImage(lessonId: string) {
 }
 
 export async function generateContentImages(lessonId: string) {
-  const { error: authError } = await requireAdmin()
-  if (authError) return { error: authError }
+  // Resolve lesson → course, then check ownership
+  const auth = await requireInstructor()
+  if (auth.error || !auth.supabase || !auth.user) {
+    return { error: auth.error || 'No autorizado' }
+  }
 
   const serviceClient = createServiceClient()
 
@@ -189,22 +221,29 @@ export async function generateContentImages(lessonId: string) {
 
   const { data: module } = await serviceClient
     .from('modules')
-    .select('course_id')
+    .select('course_id, order_index')
     .eq('id', lesson.module_id)
     .single()
 
   if (!module) return { error: 'Modulo no encontrado' }
 
-  const { data: moduleData } = await serviceClient
-    .from('modules')
-    .select('course_id, order_index')
-    .eq('id', lesson.module_id)
-    .single()
+  const courseId = module.course_id
+
+  // Check course access
+  const { error: accessError } = await requireCourseAccess(courseId)
+  if (accessError) return { error: accessError }
+
+  // Check AI credits (2 credits per image)
+  const totalCreditsNeeded = placeholders.length * 2
+  const creditCheck = await hasAICredits(auth.user.id, totalCreditsNeeded)
+  if (!creditCheck.hasCredits) {
+    return { error: creditCheck.error || 'No tienes suficientes créditos IA' }
+  }
 
   const { data: course } = await serviceClient
     .from('courses')
     .select('slug')
-    .eq('id', module.course_id)
+    .eq('id', courseId)
     .single()
 
   if (!course) return { error: 'Curso no encontrado' }
@@ -219,7 +258,7 @@ export async function generateContentImages(lessonId: string) {
       const prompt = buildContentPrompt({
         altText: placeholder.altText,
         lessonTitle: lesson.title,
-        moduleIndex: moduleData?.order_index ?? 0,
+        moduleIndex: module.order_index ?? 0,
         imageIndex: idx,
       })
 
@@ -236,6 +275,9 @@ export async function generateContentImages(lessonId: string) {
       updatedContent = updatedContent.replace(placeholder.imageName, publicUrl)
       replacements++
 
+      // Deduct credits for this image
+      await deductAICredits(auth.user.id, 2, 'image', lessonId)
+
       // Rate limit: 2 seconds between requests
       await new Promise(resolve => setTimeout(resolve, 2000))
     } catch (err) {
@@ -251,6 +293,7 @@ export async function generateContentImages(lessonId: string) {
       .eq('id', lessonId)
 
     revalidatePath('/admin/courses', 'layout')
+    revalidatePath('/instructor/courses', 'layout')
   }
 
   return {
@@ -263,8 +306,11 @@ export async function generateContentImages(lessonId: string) {
 }
 
 export async function generateLessonSummaryImage(lessonId: string) {
-  const { error: authError } = await requireAdmin()
-  if (authError) return { error: authError }
+  // Resolve lesson → course, then check ownership
+  const auth = await requireInstructor()
+  if (auth.error || !auth.supabase || !auth.user) {
+    return { error: auth.error || 'No autorizado' }
+  }
 
   const serviceClient = createServiceClient()
 
@@ -285,10 +331,22 @@ export async function generateLessonSummaryImage(lessonId: string) {
 
   if (!module) return { error: 'Modulo no encontrado' }
 
+  const courseId = module.course_id
+
+  // Check course access
+  const { error: accessError } = await requireCourseAccess(courseId)
+  if (accessError) return { error: accessError }
+
+  // Check AI credits
+  const creditCheck = await hasAICredits(auth.user.id, 2)
+  if (!creditCheck.hasCredits) {
+    return { error: creditCheck.error || 'No tienes suficientes créditos IA' }
+  }
+
   const { data: course } = await serviceClient
     .from('courses')
     .select('id, title, slug')
-    .eq('id', module.course_id)
+    .eq('id', courseId)
     .single()
 
   if (!course) return { error: 'Curso no encontrado' }
@@ -321,7 +379,11 @@ export async function generateLessonSummaryImage(lessonId: string) {
       .update({ summary_image_url: publicUrl })
       .eq('id', lessonId)
 
+    // Deduct AI credits
+    await deductAICredits(auth.user.id, 2, 'image', lessonId)
+
     revalidatePath('/admin/courses', 'layout')
+    revalidatePath('/instructor/courses', 'layout')
     revalidatePath(`/cursos/${course.slug}`, 'layout')
     return { data: { url: publicUrl } }
   } catch (err) {
@@ -331,7 +393,8 @@ export async function generateLessonSummaryImage(lessonId: string) {
 }
 
 export async function getImageGenerationStatus(courseId: string) {
-  const { error: authError } = await requireAdmin()
+  // Check course access (read-only, no credits needed)
+  const { error: authError } = await requireCourseAccess(courseId)
   if (authError) return { error: authError }
 
   const serviceClient = createServiceClient()

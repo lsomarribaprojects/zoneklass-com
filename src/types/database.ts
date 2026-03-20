@@ -2,7 +2,7 @@
 // TIPOS DEL DOMINIO - ZoneKlass
 // ============================================
 
-export type UserRole = 'super_admin' | 'admin' | 'estudiante'
+export type UserRole = 'super_admin' | 'admin' | 'instructor' | 'estudiante'
 
 export interface Profile {
   id: string
@@ -14,6 +14,13 @@ export interface Profile {
   level: number
   streak_days: number
   preferred_locale: 'es' | 'en'
+  bio: string | null
+  bio_en: string | null
+  website_url: string | null
+  social_links: Record<string, string | null> | null
+  is_instructor_verified: boolean
+  instructor_since: string | null
+  total_earnings?: number
   created_at: string
   updated_at: string
 }
@@ -37,6 +44,18 @@ export interface Course {
   thumbnail_url: string | null
   price: number
   is_published: boolean
+  is_official: boolean
+  is_marketplace_published: boolean
+  sale_type: 'free' | 'paid'
+  visibility_mode: 'public' | 'private' | 'scheduled'
+  scheduled_publish_at: string | null
+  enable_referrals: boolean
+  enable_social_sharing: boolean
+  embeddable: boolean
+  embed_domains: string[] | null
+  total_enrollments: number
+  avg_rating: number | null
+  total_reviews: number
   created_by: string
   created_at: string
   updated_at: string
@@ -280,6 +299,7 @@ export const ROLE_PERMISSIONS = {
     canManageAdmins: true,
     canViewAnalytics: true,
     canAccessAdmin: true,
+    canAccessInstructor: true,
   },
   admin: {
     canManageUsers: false,
@@ -287,6 +307,15 @@ export const ROLE_PERMISSIONS = {
     canManageAdmins: false,
     canViewAnalytics: true,
     canAccessAdmin: true,
+    canAccessInstructor: false,
+  },
+  instructor: {
+    canManageUsers: false,
+    canManageCourses: true,
+    canManageAdmins: false,
+    canViewAnalytics: true,
+    canAccessAdmin: false,
+    canAccessInstructor: true,
   },
   estudiante: {
     canManageUsers: false,
@@ -294,6 +323,7 @@ export const ROLE_PERMISSIONS = {
     canManageAdmins: false,
     canViewAnalytics: false,
     canAccessAdmin: false,
+    canAccessInstructor: false,
   },
 } as const
 
@@ -360,6 +390,40 @@ export interface EmailPreferences {
   badges: boolean
   weekly_digest: boolean
   marketing: boolean
+  created_at: string
+  updated_at: string
+}
+
+// ============================================
+// Instructor AI Memory
+// ============================================
+
+export type AIMemoryType = 'preference' | 'style' | 'feedback' | 'context'
+export type AIContextType = 'course_creation' | 'lesson_editing' | 'general' | 'review'
+
+export interface AIConversationMessage {
+  role: 'user' | 'assistant'
+  content: string
+  timestamp: string
+}
+
+export interface InstructorAIMemory {
+  id: string
+  instructor_id: string
+  memory_type: AIMemoryType
+  content: string
+  metadata: Record<string, unknown>
+  created_at: string
+  updated_at: string
+}
+
+export interface InstructorAIConversation {
+  id: string
+  instructor_id: string
+  context_type: AIContextType
+  context_id: string | null
+  messages: AIConversationMessage[]
+  summary: string | null
   created_at: string
   updated_at: string
 }
@@ -470,6 +534,16 @@ export interface Database {
         Row: EmailPreferences
         Insert: Omit<EmailPreferences, 'id' | 'created_at' | 'updated_at'>
         Update: Partial<Omit<EmailPreferences, 'id' | 'user_id' | 'created_at'>>
+      }
+      instructor_ai_memory: {
+        Row: InstructorAIMemory
+        Insert: Omit<InstructorAIMemory, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<InstructorAIMemory, 'id' | 'created_at' | 'instructor_id'>>
+      }
+      instructor_ai_conversations: {
+        Row: InstructorAIConversation
+        Insert: Omit<InstructorAIConversation, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<InstructorAIConversation, 'id' | 'created_at' | 'instructor_id'>>
       }
     }
   }

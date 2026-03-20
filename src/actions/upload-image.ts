@@ -33,7 +33,7 @@ export async function uploadLessonImage(formData: FormData) {
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+  if (!profile || !['super_admin', 'admin', 'instructor'].includes(profile.role)) {
     return { error: 'No autorizado' }
   }
 

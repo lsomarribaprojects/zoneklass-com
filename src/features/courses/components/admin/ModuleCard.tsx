@@ -2,10 +2,26 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
 import { Card } from '@/components/ui'
 import { Button } from '@/components/ui'
 import { Badge } from '@/components/ui'
 import { LessonFormModal } from './LessonFormModal'
+import { SortableLessonItem } from './SortableLessonItem'
 import { deleteLesson, reorderLessons } from '@/actions/lessons'
 import type { ModuleWithLessons, Lesson } from '@/types/database'
 import {
@@ -22,6 +38,7 @@ import {
 interface ModuleCardProps {
   module: ModuleWithLessons
   courseId: string
+  basePath?: string
   isFirst: boolean
   isLast: boolean
   onMoveUp: () => void
@@ -34,6 +51,7 @@ interface ModuleCardProps {
 export function ModuleCard({
   module,
   courseId,
+  basePath = '/admin/courses',
   isFirst,
   isLast,
   onMoveUp,
@@ -49,6 +67,14 @@ export function ModuleCard({
 
   const lessons = module.lessons || []
   const sortedLessons = [...lessons].sort((a, b) => a.order_index - b.order_index)
+
+  // Drag-and-drop sensors for lessons
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   const handleDeleteLesson = async (lessonId: string) => {
     if (!window.confirm('Estas seguro de eliminar esta leccion?')) {
@@ -113,6 +139,28 @@ export function ModuleCard({
     setShowLessonModal(false)
     setEditingLesson(null)
     onRefresh()
+  }
+
+  // Handle drag end for lessons
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (!over || active.id === over.id) return
+
+    const oldIndex = sortedLessons.findIndex((l) => l.id === active.id)
+    const newIndex = sortedLessons.findIndex((l) => l.id === over.id)
+
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const reordered = arrayMove(sortedLessons, oldIndex, newIndex)
+    const newOrder = reordered.map((l) => l.id)
+
+    const result = await reorderLessons(module.id, newOrder)
+    if (result?.error) {
+      console.error('Error reordering lessons:', result.error)
+    } else {
+      onRefresh()
+    }
   }
 
   return (
@@ -201,88 +249,102 @@ export function ModuleCard({
                 </Button>
               </div>
             ) : (
-              <div className="space-y-2">
-                {sortedLessons.map((lesson, index) => (
-                  <div
-                    key={lesson.id}
-                    className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                  >
-                    <Badge className="shrink-0 bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-gray-300">
-                      {lesson.order_index + 1}
-                    </Badge>
-
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-foreground truncate">
-                        {lesson.title}
-                      </h4>
-                      <div className="flex items-center gap-2 mt-1">
-                        {lesson.video_url && (
-                          <Badge variant="confirmed" className="text-xs">
-                            <Video className="w-3 h-3 mr-1" />
-                            Video
+              <div>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={sortedLessons.map((l) => l.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-2">
+                    {sortedLessons.map((lesson, index) => (
+                      <SortableLessonItem key={lesson.id} id={lesson.id}>
+                        <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                          <Badge className="shrink-0 bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-gray-300">
+                            {lesson.order_index + 1}
                           </Badge>
-                        )}
-                        {lesson.duration_minutes && lesson.duration_minutes > 0 && (
-                          <Badge className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                            <Clock className="w-3 h-3 mr-1" />
-                            {lesson.duration_minutes} min
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
 
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => router.push(`/admin/courses/${courseId}/lessons/${lesson.id}/edit`)}
-                        className="hover:bg-blue-100 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                        title="Editar contenido"
-                      >
-                        <FileEdit className="w-4 h-4" />
-                      </Button>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-foreground truncate">
+                              {lesson.title}
+                            </h4>
+                            <div className="flex items-center gap-2 mt-1">
+                              {lesson.video_url && (
+                                <Badge variant="confirmed" className="text-xs">
+                                  <Video className="w-3 h-3 mr-1" />
+                                  Video
+                                </Badge>
+                              )}
+                              {lesson.duration_minutes && lesson.duration_minutes > 0 && (
+                                <Badge className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  {lesson.duration_minutes} min
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
 
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEditLesson(lesson)}
-                        className="hover:bg-gray-200 dark:hover:bg-gray-600"
-                        title="Editar datos"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </Button>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                router.push(`${basePath}/${courseId}/lessons/${lesson.id}/edit`)
+                              }
+                              className="hover:bg-blue-100 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                              title="Editar contenido"
+                            >
+                              <FileEdit className="w-4 h-4" />
+                            </Button>
 
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleMoveLessonUp(lesson, index)}
-                        disabled={index === 0}
-                        className="hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-30"
-                      >
-                        <ChevronUp className="w-4 h-4" />
-                      </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditLesson(lesson)}
+                              className="hover:bg-gray-200 dark:hover:bg-gray-600"
+                              title="Editar datos"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
 
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleMoveLessonDown(lesson, index)}
-                        disabled={index === sortedLessons.length - 1}
-                        className="hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-30"
-                      >
-                        <ChevronDown className="w-4 h-4" />
-                      </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleMoveLessonUp(lesson, index)}
+                              disabled={index === 0}
+                              className="hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-30"
+                            >
+                              <ChevronUp className="w-4 h-4" />
+                            </Button>
 
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteLesson(lesson.id)}
-                        className="hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleMoveLessonDown(lesson, index)}
+                              disabled={index === sortedLessons.length - 1}
+                              className="hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-30"
+                            >
+                              <ChevronDown className="w-4 h-4" />
+                            </Button>
+
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteLesson(lesson.id)}
+                              className="hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </SortableLessonItem>
+                    ))}
                   </div>
-                ))}
+                </SortableContext>
+              </DndContext>
 
                 <Button
                   variant="secondary"
@@ -306,6 +368,7 @@ export function ModuleCard({
         }}
         moduleId={module.id}
         courseId={courseId}
+        basePath={basePath}
         lesson={editingLesson || undefined}
         onSuccess={handleLessonSuccess}
       />

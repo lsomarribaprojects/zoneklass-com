@@ -10,6 +10,7 @@ export function SignupForm() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [selectedRole, setSelectedRole] = useState<'estudiante' | 'instructor'>('estudiante')
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -78,6 +79,82 @@ export function SignupForm() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Role Selection */}
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-3">
+            {t.auth.iAmA}
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            {/* Student Option */}
+            <label
+              className={`relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                selectedRole === 'estudiante'
+                  ? 'border-primary-500 bg-primary-50'
+                  : 'border-border bg-white hover:border-border-dark'
+              }`}
+            >
+              <input
+                type="radio"
+                name="role"
+                value="estudiante"
+                checked={selectedRole === 'estudiante'}
+                onChange={(e) => setSelectedRole(e.target.value as 'estudiante' | 'instructor')}
+                className="sr-only"
+              />
+              <div className="flex items-center gap-2 mb-2">
+                <svg className="w-5 h-5 text-primary-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 14l9-5-9-5-9 5 9 5z" />
+                  <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                </svg>
+                <span className="font-semibold text-foreground">{t.auth.student}</span>
+              </div>
+              <p className="text-xs text-foreground-muted">{t.auth.studentDescription}</p>
+              {selectedRole === 'estudiante' && (
+                <div className="absolute top-3 right-3">
+                  <svg className="w-5 h-5 text-primary-500" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                  </svg>
+                </div>
+              )}
+            </label>
+
+            {/* Instructor Option */}
+            <label
+              className={`relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                selectedRole === 'instructor'
+                  ? 'border-primary-500 bg-primary-50'
+                  : 'border-border bg-white hover:border-border-dark'
+              }`}
+            >
+              <input
+                type="radio"
+                name="role"
+                value="instructor"
+                checked={selectedRole === 'instructor'}
+                onChange={(e) => setSelectedRole(e.target.value as 'estudiante' | 'instructor')}
+                className="sr-only"
+              />
+              <div className="flex items-center gap-2 mb-2">
+                <svg className="w-5 h-5 text-primary-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span className="font-semibold text-foreground">{t.auth.instructor}</span>
+              </div>
+              <p className="text-xs text-foreground-muted">{t.auth.instructorDescription}</p>
+              {selectedRole === 'instructor' && (
+                <div className="absolute top-3 right-3">
+                  <svg className="w-5 h-5 text-primary-500" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                  </svg>
+                </div>
+              )}
+            </label>
+          </div>
+        </div>
+
         {/* Full Name */}
         <div>
           <label htmlFor="full_name" className="block text-sm font-medium text-foreground mb-1.5">

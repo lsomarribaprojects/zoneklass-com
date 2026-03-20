@@ -67,27 +67,15 @@ export async function getPublishedCourses(filters?: CatalogFilters): Promise<{
 
   // Transformar datos para agregar stats
   const coursesWithStats: CourseWithStats[] = (data || []).map((course) => {
-    const modules = (course.modules || []) as Array<{
+    const { modules: rawModules, ...courseBase } = course as any
+    const modules = (rawModules || []) as Array<{
       id: string
       lessons: Array<{ id: string; duration_minutes: number }>
     }>
     const allLessons = modules.flatMap(m => m.lessons || [])
 
     return {
-      id: course.id,
-      title: course.title,
-      title_en: course.title_en ?? null,
-      description: course.description,
-      description_en: course.description_en ?? null,
-      slug: course.slug,
-      category: course.category,
-      level: course.level,
-      thumbnail_url: course.thumbnail_url,
-      price: course.price,
-      is_published: course.is_published,
-      created_by: course.created_by,
-      created_at: course.created_at,
-      updated_at: course.updated_at,
+      ...courseBase,
       modules_count: modules.length,
       lessons_count: allLessons.length,
       total_duration_minutes: allLessons.reduce((sum, l) => sum + (l.duration_minutes || 0), 0),
@@ -147,22 +135,11 @@ export async function getCourseBySlug(slug: string): Promise<{
     isEnrolled = !!enrollment
   }
 
+  const { modules: _rawModules, ...courseBase } = course as any
+
   return {
     data: {
-      id: course.id,
-      title: course.title,
-      title_en: course.title_en ?? null,
-      description: course.description,
-      description_en: course.description_en ?? null,
-      slug: course.slug,
-      category: course.category,
-      level: course.level,
-      thumbnail_url: course.thumbnail_url,
-      price: course.price,
-      is_published: course.is_published,
-      created_by: course.created_by,
-      created_at: course.created_at,
-      updated_at: course.updated_at,
+      ...courseBase,
       modules,
       enrolled_count: 0,
       is_enrolled: isEnrolled,
@@ -268,33 +245,21 @@ export async function getEnrolledCourses(): Promise<{
     .filter((e) => e.course)
     .map((enrollment) => {
       const course = enrollment.course as unknown as Record<string, unknown>
-      const modules = (course.modules || []) as Array<{
+      const { modules: rawModules, ...courseBase } = course
+      const modules = (rawModules || []) as Array<{
         id: string
         lessons: Array<{ id: string; duration_minutes: number }>
       }>
       const allLessons = modules.flatMap(m => m.lessons || [])
 
       return {
-        id: course.id as string,
-        title: course.title as string,
-        title_en: (course.title_en as string | null) ?? null,
-        description: course.description as string | null,
-        description_en: (course.description_en as string | null) ?? null,
-        slug: course.slug as string,
-        category: course.category as CourseCategory,
-        level: course.level as CourseLevel,
-        thumbnail_url: course.thumbnail_url as string | null,
-        price: course.price as number,
-        is_published: course.is_published as boolean,
-        created_by: course.created_by as string,
-        created_at: course.created_at as string,
-        updated_at: course.updated_at as string,
+        ...courseBase,
         modules_count: modules.length,
         lessons_count: allLessons.length,
         total_duration_minutes: allLessons.reduce((sum, l) => sum + (l.duration_minutes || 0), 0),
         enrolled_count: 0,
         enrolled_at: enrollment.enrolled_at,
-      }
+      } as CourseWithStats & { enrolled_at: string }
     })
 
   return { data: courses, error: null }

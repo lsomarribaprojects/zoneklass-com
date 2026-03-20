@@ -15,6 +15,7 @@ const signupSchema = z.object({
   full_name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   email: z.string().email('Email invalido'),
   password: z.string().min(6, 'La contrasena debe tener al menos 6 caracteres'),
+  role: z.enum(['estudiante', 'instructor']).default('estudiante'),
 })
 
 export async function login(formData: FormData) {
@@ -47,6 +48,7 @@ export async function signup(formData: FormData) {
     full_name: formData.get('full_name'),
     email: formData.get('email'),
     password: formData.get('password'),
+    role: formData.get('role') || 'estudiante',
   })
 
   if (!parsed.success) {
@@ -61,6 +63,7 @@ export async function signup(formData: FormData) {
     options: {
       data: {
         full_name: parsed.data.full_name,
+        role: parsed.data.role, // Pass role to trigger (will be set in profiles table)
       },
     },
   })
@@ -73,7 +76,13 @@ export async function signup(formData: FormData) {
   sendWelcomeEmail(parsed.data.email, parsed.data.full_name).catch(console.error)
 
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+
+  // Redirect to onboarding for instructors, dashboard for students
+  if (parsed.data.role === 'instructor') {
+    redirect('/onboarding')
+  } else {
+    redirect('/dashboard')
+  }
 }
 
 export async function signout() {

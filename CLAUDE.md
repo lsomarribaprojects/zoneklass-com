@@ -310,12 +310,31 @@ test('should calculate total with tax', () => {
 ## 🔥 Aprendizajes (Auto-Blindaje Activo)
 
 > Esta sección CRECE con cada error encontrado.
+> Detalle completo en `ERRORS.md`. Aqui solo reglas criticas.
 
 ### 2025-01-09: Usar npm run dev, no next dev
 - **Error**: Puerto hardcodeado causa conflictos
 - **Fix**: Siempre usar `npm run dev` (auto-detecta puerto)
 - **Aplicar en**: Todos los proyectos
 
+### 2026-03-18: Siempre sincronizar tipos TS despues de migraciones SQL
+- **Error**: Migraciones 012-014 aplicadas sin actualizar `src/types/database.ts`
+- **Fix**: Actualizar UserRole, Profile, ROLE_PERMISSIONS al agregar 'instructor'
+- **Regla**: Cada `ALTER TYPE`, `ALTER TABLE`, `CREATE TABLE` DEBE tener su update en TypeScript
+- **Aplicar en**: Todos los sprints con migraciones
+
+### 2026-03-18: Pipeline i18n: types.ts PRIMERO, dictionaries DESPUES
+- **Error**: Agregar claves a diccionarios sin actualizar la interface Dictionary
+- **Fix**: Siempre editar `src/features/i18n/types.ts` antes que `es.ts`/`en.ts`
+- **Aplicar en**: Todo nuevo texto visible al usuario
+
+### 2026-03-18: Nuevas rutas protegidas deben ir al middleware matcher
+- **Error**: `/onboarding` creada sin agregarla a `src/middleware.ts`
+- **Fix**: Agregar al array matcher
+- **Aplicar en**: Toda nueva ruta que requiera sesion activa
+
 ---
 
-*Este archivo es el cerebro de la fábrica. Cada error documentado la hace más fuerte.*
+*Este archivo es el cerebro de la fabrica. Cada error documentado la hace mas fuerte.*
+*Ver `ERRORS.md` para el registro completo de errores y soluciones.*
+*Ver `.claude/skills/error-tracker/SKILL.md` para el proceso de deteccion.*
